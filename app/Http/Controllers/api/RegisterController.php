@@ -37,18 +37,17 @@ class RegisterController extends BaseController
 
         return $this->sendResponse($success, 'User register successfully.', 201);
     }
+
+
     public function login(LoginRequest $request): JsonResponse
     {
         $request->authenticate();
-        $credentials = $request->only('email', 'password');
-        if(auth()->attempt($credentials)){
+
+
             $user = auth()->user();
             $success['token'] =  $user->createToken('MyApp')-> accessToken;
             $success['name'] =  $user->name;
-            return $this->sendResponse($success, 'User login successfully.');
-        }
-        else{
-            return $this->sendError('Unauthorised.', ['error'=>'Unauthorised'], 422);
-        }
+            return $this->sendResponse($success, 'User login successfully.', 201);
+
     }
 }
