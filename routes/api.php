@@ -39,6 +39,8 @@ Route::prefix('login/{provider}')->where(['provider' => '(line|github|google|fac
 
 //プロフィール
 Route::get('profiles', [ProfileController::class, 'index']);
+Route::post('profile/register', [ProfileController::class, 'register']);
+
 //ルーム
 Route::get('rooms', [RoomController::class, 'index']);
 Route::post('room/register', [RoomController::class, 'register']);
