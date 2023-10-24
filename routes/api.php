@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\RegisterController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\ProfileController;
 use App\Events\MessageRecieved;
 /*
 |--------------------------------------------------------------------------
@@ -36,8 +37,10 @@ Route::prefix('login/{provider}')->where(['provider' => '(line|github|google|fac
     Route::get('/callback', 'App\Http\Controllers\Auth\LoginController@handleProviderCallback')->name('social_login.callback');
 });
 
+//プロフィール
+Route::get('profiles', [ProfileController::class, 'index']);
 //ルーム
-Route::get('room/index', [RoomController::class, 'index']);
+Route::get('rooms', [RoomController::class, 'index']);
 Route::post('room/register', [RoomController::class, 'register']);
 
 // websocket connection
