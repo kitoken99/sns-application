@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\LoginRequest;
 use App\Http\Controllers\API\BaseController as BaseController;
 use App\Models\User;
+use App\Models\Profile;
 use Illuminate\Support\Facades\Hash;
 use Validator;
 use Illuminate\Http\JsonResponse;
@@ -31,22 +32,31 @@ class RegisterController extends BaseController
           'name' => $request->name,
           'email' => $request->email,
           'password' => Hash::make($request->password),
+          'auth_type' => "password",
         ]);
-        $success['token'] =  $user->createToken('MyApp')->accessToken;
-        $success['name'] =  $user->name;
+        Profile::create([
+            'user_id' => $user->id,
+            'account_type' => 'authenticater',
+            'name' => $user->name,
+        ]);
 
+        $success['token'] =  $user->createToken('MyApp')->accessToken;
         return $this->sendResponse($success, 'User register successfully.', 201);
     }
 
 
     public function login(LoginRequest $request): JsonResponse
     {
+        $existingUser = User::whereEmail($request->email)->first();
+        if($existingUser){
+            if($existingUser->auth_type == "social"){
+                $errors = ["email" => ["Please login with Social Account"]];
+                return BaseController::sendError('Authentication Error.', $errors, 422);
+            }
+        }
         $request->authenticate();
-
-
             $user = auth()->user();
             $success['token'] =  $user->createToken('MyApp')-> accessToken;
-            $success['name'] =  $user->name;
             return $this->sendResponse($success, 'User login successfully.', 201);
 
     }
