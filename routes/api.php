@@ -37,6 +37,7 @@ Route::prefix('login/{provider}')->where(['provider' => '(line|github|google|fac
 });
 
 //ルーム
+Route::get('room/index', [RoomController::class, 'index']);
 Route::post('room/register', [RoomController::class, 'register']);
 
 // websocket connection
