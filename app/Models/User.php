@@ -12,6 +12,7 @@ use Laravel\Jetstream\HasTeams;
 use Laravel\Passport\HasApiTokens;
 use App\Models\Provider;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -71,9 +72,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Profile::class);
     }
-    public function messages(): HasMany
+    public function messages(): BelongsToMany
     {
-        return $this->hasMany(Massage::class);
+        return $this->belongsToMany(Massage::class);
     }
 
     public static function socialFindOrCreate($providerUser, $provider)

@@ -33,13 +33,7 @@ class MessageRecieved implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new Channel('channel-'.$this->message->room_id),
-        ];
-    }
-
-    public function broadcastWith(){
-        return [
-            "message" => $this->message
+            new Channel('channel-'.$this->message->room_id, $this->message),
         ];
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MessageController;
 use App\Events\MessageRecieved;
+use Illuminate\Support\Facades\Log;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -61,6 +62,16 @@ Route::middleware('auth:api')->post('/message', function(Request $request){
         'room_id' => request()->room_id,
         'body' => request()->body
     ]);
+    $members = $message->room()->first()->members()->get();
+    // Log::debug($members->getAttributes());
+    foreach ($members as $member){
+        if($member->profile()->first()->user()->first()->id != $request->user()->id){
+        \App\Models\MessageUser::create([
+            'user_id' => $member->profile()->first()->user_id,
+            'message_id' => $message->id,
+        ]);
+    }
+    }
     broadcast(new MessageRecieved($message));
     return $message;
 });

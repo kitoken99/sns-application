@@ -6,13 +6,28 @@ use App\Models\Message;
 use App\Models\Room;
 use Illuminate\Http\Request;
 use App\Events\MessageRecieved;
+use App\Models\MessageUser;
+use Illuminate\Support\Facades\Log;
 
 class MessageController extends Controller
 {
 
     public function roomMessages(Request $request, $room_id){
-        $room = Room::find($room_id);
-        return $room->messages()->oldest()->select('id','user_id','body')->get();
+
+        $messages =  Room::find($room_id)->messages()->get();
+        Log::debug("ここから");
+        $read_records = [];
+        foreach($messages as $message){
+            $read_records = MessageUser::where('message_id', $message->id)->where('is_read', false)->get();
+            foreach($read_records as $record){
+                if($request->user()->id == $record->user_id){
+                    $record->is_read = true;
+                    $record->save();
+                }
+            }
+        }
+
+        return $messages;
     }
 
 
@@ -23,8 +38,8 @@ class MessageController extends Controller
         $message->message = $request->message;
         $message->save();
 
-        MessageRecieved::dispatch($message);
-        // event(new MessageRecieved($message, $request->room_id));
+        // MessageRecieved::dispatch($message);
+        event(new MessageRecieved($message, $request->room_id));
 
         return response($message, 201);
     }
