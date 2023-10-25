@@ -1,9 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Broadcast;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Message;
-use App\Models\User;
+
 /*
 |--------------------------------------------------------------------------
 | Broadcast Channels
@@ -15,6 +13,6 @@ use App\Models\User;
 |
 */
 
-Broadcast::channel('test', function (User $user) {
-    return Auth::check();
+Broadcast::channel('private-room.{roomId}', function ($user, $id) {
+    return true;
 });

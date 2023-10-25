@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\RegisterController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\MessageController;
 use App\Events\MessageRecieved;
 /*
 |--------------------------------------------------------------------------
@@ -52,17 +53,14 @@ Route::middleware('auth:api')->get('my-rooms', [RoomController::class, 'myRooms'
 Route::post('room/register', [RoomController::class, 'register']);
 
 // websocket connection
+Route::middleware('auth:api')->get('/messages/{room_id}', [MessageController::class, 'roomMessages']);
 
-
-Route::middleware('auth:api')->get('/messages', function (Request $request){
-    return \App\Models\Message::oldest()->select('id','user_id','body')->get();
-});
 Route::middleware('auth:api')->post('/message', function(Request $request){
     $message = \App\Models\Message::create([
         'user_id' => $request->user()->id,
         'room_id' => request()->room_id,
         'body' => request()->body
     ]);
-    event(new MessageRecieved($message->body));
+    broadcast(new MessageRecieved($message));
     return $message;
 });

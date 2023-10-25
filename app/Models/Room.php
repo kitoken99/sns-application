@@ -19,4 +19,9 @@ class Room extends Model
         return $this->hasMany(Member::class);
     }
 
+    public function messages(): HasMany
+    {
+        return $this->hasMany(Message::class);
+    }
+
 }

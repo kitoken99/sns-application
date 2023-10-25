@@ -19,10 +19,10 @@ class MessageRecieved implements ShouldBroadcast
      * Create a new event instance.
      */
 
-    public $body;
-    public function __construct( $body)
+    public $message;
+    public function __construct( $message)
     {
-        $this->body = $body;
+        $this->message = $message;
     }
 
     /**
@@ -33,7 +33,13 @@ class MessageRecieved implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new Channel('test', $this->body),
+            new Channel('channel-'.$this->message->room_id),
+        ];
+    }
+
+    public function broadcastWith(){
+        return [
+            "message" => $this->message
         ];
     }
 }

@@ -28,7 +28,6 @@ class RoomController extends Controller
                 $room['members'] = [];
                 foreach ($roomMembers as $roomMember){
                     $memberProfile = $roomMember->profile()->first();
-                    Log::debug($memberProfile);
                     if($memberProfile->user_id==$request->user()->id){
                         $room['account_type'] = $memberProfile->account_type;
                     }else{
@@ -36,14 +35,13 @@ class RoomController extends Controller
                             if (Storage::exists($filePath)) {
                                 $memberProfile->image = base64_encode(Storage::get($filePath));
                             }
-                        
+
                         array_push($room['members'], $memberProfile->getAttributes());
                     }
                 }
                 array_push($rooms, $room);
             }
         }
-        Log::debug($rooms);
         return $rooms;
     }
     public function register(Request $request)
