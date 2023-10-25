@@ -37,18 +37,22 @@ Route::prefix('login/{provider}')->where(['provider' => '(line|github|google|fac
     Route::get('/callback', 'App\Http\Controllers\Auth\LoginController@handleProviderCallback')->name('social_login.callback');
 });
 
-//プロフィール
-Route::get('profiles', [ProfileController::class, 'index']);
-Route::post('profile/register', [ProfileController::class, 'register']);
 
-//ルーム
-Route::get('rooms', [RoomController::class, 'index']);
-Route::post('room/register', [RoomController::class, 'register']);
-
-// websocket connection
+//ユーザー
 Route::middleware('auth:api')->get('/user', function (Request $request){
     return \App\Models\User::find($request->user()->id);
 });
+
+//プロフィール
+Route::middleware('auth:api')->get('my-profiles', [ProfileController::class, 'myProfiles']);
+Route::post('profile/register', [ProfileController::class, 'register']);
+
+//ルーム
+Route::middleware('auth:api')->get('my-rooms', [RoomController::class, 'myRooms']);
+Route::post('room/register', [RoomController::class, 'register']);
+
+// websocket connection
+
 
 Route::middleware('auth:api')->get('/messages', function (Request $request){
     return \App\Models\Message::oldest()->select('id','user_id','body')->get();

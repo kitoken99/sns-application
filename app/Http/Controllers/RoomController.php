@@ -7,18 +7,43 @@ use App\Models\Member;
 use App\Models\Room;
 use App\Models\User;
 use App\Models\Profile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
 class RoomController extends Controller
 {
-    public function index(Request $request){
-        $profileId = $request->profileId;
-        $profile = Profile::whereId($profileId)->first();
-        $members = $profile->members()->get();
+    public function myRooms(Request $request){
+        //ユーザーのプロファイルを取得
+        $profiles = $request->user()->profiles()->get();
         $rooms = [];
-        foreach ($members as $member){
-            array_push($rooms, $member->room()->first());
+        //それぞれのプロファイルが属するRoom情報を取得
+        foreach ($profiles as $profile){
+            $members = $profile->members()->get();
+            foreach ($members as $member){
+                $roomModel = $member->room()->first();
+                //Room情報
+                $room = $roomModel->getAttributes();
+
+                $roomMembers = $roomModel->members()->get();
+                $room['members'] = [];
+                foreach ($roomMembers as $roomMember){
+                    $memberProfile = $roomMember->profile()->first();
+                    Log::debug($memberProfile);
+                    if($memberProfile->user_id==$request->user()->id){
+                        $room['account_type'] = $memberProfile->account_type;
+                    }else{
+                        $filePath = "public/profiles/" . $memberProfile->image;
+                            if (Storage::exists($filePath)) {
+                                $memberProfile->image = base64_encode(Storage::get($filePath));
+                            }
+                        
+                        array_push($room['members'], $memberProfile->getAttributes());
+                    }
+                }
+                array_push($rooms, $room);
+            }
         }
+        Log::debug($rooms);
         return $rooms;
     }
     public function register(Request $request)
@@ -27,11 +52,11 @@ class RoomController extends Controller
             'name' => "",
           ]);
 
-        $memberIds = $request->memberIds;
+        $profileIds = $request->profileIds;
 
-        foreach ($memberIds as $memberId) {
+        foreach ($profileIds as $profileId) {
             Member::create([
-                'profile_id' => $memberId,
+                'profile_id' => $profileId,
                 'room_id' => $room->id,
             ]);
         };
