@@ -3,53 +3,49 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Member;
+use App\Models\Profile_Room;
 use App\Models\Room;
 use App\Models\User;
 use App\Models\Profile;
 use App\Models\MessageUser;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Profiler\Profiler;
 
 class RoomController extends Controller
 {
-    public function myRooms(Request $request){
+    public function myRooms(Request $request, $profile_id){
         //ユーザーのプロファイルを取得
-        $profiles = $request->user()->profiles()->get();
+        $profile = Profile::find($profile_id);
+
+        //未読数の取得
         $records = MessageUser::where('user_id', $request->user()->id)->where('is_read', false)->get();
-        $rooms = [];
-        //それぞれのプロファイルが属するRoom情報を取得
-        foreach ($profiles as $profile){
-            $members = $profile->members()->get();
-            foreach ($members as $member){
-                $roomModel = $member->room()->first();
-                $room = $roomModel->getAttributes();
 
-                //未読数計算
-                $notRead = 0;
-                foreach ($roomModel->messages()->get() as $message){
-                     $notRead = $notRead + $records->where('message_id', $message->id)->count();
-                }
-                $room['notRead'] = $notRead;
+        //Room情報の取得
+        $rooms = $profile->rooms()->get()->pluck(null, "id");
+        foreach($rooms as $room){
 
-
-                $roomMembers = $roomModel->members()->get();
-                $room['members'] = [];
-                foreach ($roomMembers as $roomMember){
-                    $memberProfile = $roomMember->profile()->first();
-                    if($memberProfile->user_id==$request->user()->id){
-                        $room['account_type'] = $memberProfile->account_type;
-                    }else{
-                        $filePath = "public/profiles/" . $memberProfile->image;
-                            if (Storage::exists($filePath)) {
-                                $memberProfile->image = base64_encode(Storage::get($filePath));
-                            }
-
-                        array_push($room['members'], $memberProfile->getAttributes());
-                    }
-                }
-                array_push($rooms, $room);
+            //メンバー情報
+            $room['members'] = $room->profiles()->get();
+            $filePath = "public/profiles/" . $profile->image;
+            foreach($room['members'] as $member){
+                $member->toBase();
             }
+
+            //未読数
+            $notRead = 0;
+            foreach ($room->messages()->get() as $message){
+                $notRead = $notRead + $records->where('message_id', $message->id)->count();
+            }
+            $room['not_read'] = $notRead;
+
+            //最後のメッセージ
+            $last_message = $room->messages()->latest('created_at')->first();
+            $last_message['name'] = $room->profiles()->whereUserId($last_message->user_id)->first()->name;
+            $room['last_message'] = $last_message;
+        }
+        if ($rooms->isEmpty()) {
+            return (object) [];
         }
         return $rooms;
     }
@@ -57,24 +53,19 @@ class RoomController extends Controller
     {
         $room = Room::create([
             'name' => $request->name == "" ? "" : $request->name,
-          ]);
+        ]);
 
         $profileIds = $request->profileIds;
 
         foreach ($profileIds as $profileId) {
-            Member::create([
-                'profile_id' => $profileId,
-                'room_id' => $room->id,
-            ]);
+            $profile = Profile::whereId($profileId)->first();
+            $profile->rooms()->sync($room->id);
         };
         $emails = $request->emails;
         foreach ($emails as $email) {
             $user = User::whereEmail($email)->first();
             $profile = $user->profiles()->whereAccountType('authenticator')->first();
-            Member::create([
-                'profile_id' => $profile->id,
-                'room_id' => $room->id,
-            ]);
+            $profile->rooms()->sync($room->id);
         };
     }
 }

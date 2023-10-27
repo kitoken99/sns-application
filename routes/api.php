@@ -47,31 +47,16 @@ Route::middleware('auth:api')->get('/user', function (Request $request){
 
 //プロフィール
 Route::middleware('auth:api')->get('my-profiles', [ProfileController::class, 'myProfiles']);
-Route::post('profile/register', [ProfileController::class, 'register']);
+Route::middleware('auth:api')->post('profile', [ProfileController::class, 'register']);
 
 //ルーム
-Route::middleware('auth:api')->get('my-rooms', [RoomController::class, 'myRooms']);
+Route::middleware('auth:api')->get('profile/{profile_id}/rooms', [RoomController::class, 'myRooms']);
 Route::post('room/register', [RoomController::class, 'register']);
 
 // websocket connection
 Route::middleware('auth:api')->get('/messages/{room_id}', [MessageController::class, 'roomMessages']);
+Route::middleware('auth:api')->get('/room/{room_id}/profiles', [ProfileController::class, 'roomProfiles']);
+Route::middleware('auth:api')->post('/room/{room_id}/message', [MessageController::class, 'newMessage']);
 
-Route::middleware('auth:api')->post('/message', function(Request $request){
-    $message = \App\Models\Message::create([
-        'user_id' => $request->user()->id,
-        'room_id' => request()->room_id,
-        'body' => request()->body
-    ]);
-    $members = $message->room()->first()->members()->get();
-    // Log::debug($members->getAttributes());
-    foreach ($members as $member){
-        if($member->profile()->first()->user()->first()->id != $request->user()->id){
-        \App\Models\MessageUser::create([
-            'user_id' => $member->profile()->first()->user_id,
-            'message_id' => $message->id,
-        ]);
-    }
-    }
-    broadcast(new MessageRecieved($message));
-    return $message;
-});
+
+

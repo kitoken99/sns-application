@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Room extends Model
 {
@@ -14,9 +15,9 @@ class Room extends Model
         'name',
     ];
 
-    public function members(): HasMany
+    public function profiles(): BelongsToMany
     {
-        return $this->hasMany(Member::class);
+        return $this->belongsToMany(Profile::class, 'profile_room');
     }
 
     public function messages(): HasMany

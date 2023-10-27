@@ -13,9 +13,11 @@ class MessageController extends Controller
 {
 
     public function roomMessages(Request $request, $room_id){
-
         $messages =  Room::find($room_id)->messages()->get();
         Log::debug("ここから");
+
+
+        //既読処理
         $read_records = [];
         foreach($messages as $message){
             $read_records = MessageUser::where('message_id', $message->id)->where('is_read', false)->get();
@@ -26,8 +28,29 @@ class MessageController extends Controller
                 }
             }
         }
-
         return $messages;
+    }
+
+    public function newMessage(Request $request, $room_id){
+            $message = Message::create([
+                'user_id' => $request->user()->id,
+                'room_id' => $room_id,
+                'body' => request()->body
+            ]);
+            $profiles = Room::find($room_id)->profiles()->get();
+
+            //未読処理
+            foreach ($profiles as $profile){
+                if($profile->user_id != $request->user()->id){
+                MessageUser::create([
+                    'user_id' => $profile->user_id,
+                    'message_id' => $message->id,
+                ]);
+            }
+            }
+            broadcast(new MessageRecieved($message));
+            return $message;
+        
     }
 
 
