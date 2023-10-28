@@ -14,7 +14,7 @@ class Profile extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'account_type', 'name', 'caption', 'image',
+        'user_id', 'account_type', 'name', 'caption', 'image', 'is_main'
     ];
 
 

@@ -36,8 +36,9 @@ class RegisterController extends BaseController
         ]);
         Profile::create([
             'user_id' => $user->id,
-            'account_type' => 'authenticater',
+            'account_type' => 'main',
             'name' => $user->name,
+            'is_main' => true
         ]);
 
         $success['token'] =  $user->createToken('MyApp')->accessToken;

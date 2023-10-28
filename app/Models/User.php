@@ -11,6 +11,8 @@ use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Passport\HasApiTokens;
 use App\Models\Provider;
+use App\Models\Message;
+
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -72,9 +74,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Profile::class);
     }
+
     public function messages(): BelongsToMany
     {
-        return $this->belongsToMany(Massage::class);
+        return $this->belongsToMany(Message::class, 'message_user')->withPivot('is_read');
     }
 
     public static function socialFindOrCreate($providerUser, $provider)
@@ -110,8 +113,9 @@ class User extends Authenticatable
                     'email' => $providerUser->getEmail(),
                 ]);
                 $user->Profiles()->create([
-                    'account_type' => 'authenticator',
+                    'account_type' => 'main',
                     'name' => $user->name,
+                    'is_main' => true,
                 ]);
                 $user->Providers()->create([
                     'provider_user_id'   => $providerUser->getId(),

@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('provider_user_id');
             $table->primary(['provider_name', 'provider_user_id']);
             $table->unique(['user_id', 'provider_name']);
-            $table->dateTime('created_at')->nullable();
-            $table->dateTime('updated_at')->nullable();
+            $table->date('birth_date')->nullable();
+            $table->timestamps();
         });
     }
 

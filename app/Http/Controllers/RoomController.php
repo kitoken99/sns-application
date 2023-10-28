@@ -7,7 +7,8 @@ use App\Models\Profile_Room;
 use App\Models\Room;
 use App\Models\User;
 use App\Models\Profile;
-use App\Models\MessageUser;
+use App\Models\Message;
+
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
@@ -19,12 +20,11 @@ class RoomController extends Controller
         $profile = Profile::find($profile_id);
 
         //未読数の取得
-        $records = MessageUser::where('user_id', $request->user()->id)->where('is_read', false)->get();
+        $records = $request->user()->messages()->where('is_read', false)->get();
 
         //Room情報の取得
         $rooms = $profile->rooms()->get()->pluck(null, "id");
         foreach($rooms as $room){
-
             //メンバー情報
             $room['members'] = $room->profiles()->get();
             $filePath = "public/profiles/" . $profile->image;
@@ -33,11 +33,8 @@ class RoomController extends Controller
             }
 
             //未読数
-            $notRead = 0;
-            foreach ($room->messages()->get() as $message){
-                $notRead = $notRead + $records->where('message_id', $message->id)->count();
-            }
-            $room['not_read'] = $notRead;
+            $room['not_read'] = $records->whereRoomId($room['id'])->count();
+        
 
             //最後のメッセージ
             $last_message = $room->messages()->latest('created_at')->first();

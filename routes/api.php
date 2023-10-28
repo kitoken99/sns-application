@@ -6,6 +6,7 @@ use App\Http\Controllers\api\RegisterController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\UserController;
 use App\Events\MessageRecieved;
 use Illuminate\Support\Facades\Log;
 /*
@@ -41,13 +42,16 @@ Route::prefix('login/{provider}')->where(['provider' => '(line|github|google|fac
 
 
 //ユーザー
-Route::middleware('auth:api')->get('/user', function (Request $request){
-    return \App\Models\User::find($request->user()->id);
+Route::group(['middleware' => "auth:api" ], function () {
+    Route::get('/user', [UserController::class, 'getUser']);
+    Route::patch('/user', [UserController::class, 'updateUser']);
 });
 
 //プロフィール
 Route::middleware('auth:api')->get('my-profiles', [ProfileController::class, 'myProfiles']);
-Route::middleware('auth:api')->post('profile', [ProfileController::class, 'register']);
+Route::middleware('auth:api')->get('my-profiles', [ProfileController::class, 'myProfiles']);
+Route::middleware('auth:api')->post('profile', [ProfileController::class, 'create']);
+Route::middleware('auth:api')->get('profile', [ProfileController::class, 'find']);
 
 //ルーム
 Route::middleware('auth:api')->get('profile/{profile_id}/rooms', [RoomController::class, 'myRooms']);
