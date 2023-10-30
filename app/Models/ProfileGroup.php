@@ -6,14 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Profile_Room extends Model
+class ProfileGroup extends Model
 {
     use HasFactory;
-    protected $primaryKey = ['profile_id', 'room_id'];
+    protected $table = 'profile_group';
+    protected $primaryKey = ['profile_id', 'group_id'];
     public $incrementing = false;
 
     protected $fillable = [
-        'profile_id', 'room_id'
+        'user_id', 'profile_id', 'group_id', 'state'
     ];
 
 }

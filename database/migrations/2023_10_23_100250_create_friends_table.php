@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('profile_room', function (Blueprint $table) {
+        Schema::create('friends', function (Blueprint $table) {
+            $table->foreignId('user_id')->constrained()->name('my_user_id');
             $table->foreignId('profile_id')->constrained();
+            $table->unsignedBigInteger('friend_user_id');
+            $table->unsignedBigInteger('friend_profile_id');
             $table->foreignId('room_id')->constrained();
-            $table->primary(['profile_id', 'room_id']);
+            $table->string('state')->default("unaccepted");
             $table->timestamps();
         });
     }
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('profile_room');
+        Schema::dropIfExists('friends');
     }
 };

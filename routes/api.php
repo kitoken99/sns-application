@@ -7,6 +7,8 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\FriendController;
+use App\Http\Controllers\GroupController;
 use App\Events\MessageRecieved;
 use Illuminate\Support\Facades\Log;
 /*
@@ -41,10 +43,34 @@ Route::prefix('login/{provider}')->where(['provider' => '(line|github|google|fac
 });
 
 
-//ユーザー
 Route::group(['middleware' => "auth:api" ], function () {
-    Route::get('/user', [UserController::class, 'getUser']);
-    Route::patch('/user', [UserController::class, 'updateUser']);
+    //ユーザー
+    Route::get('/user', [UserController::class, 'get']);
+    Route::patch('/user', [UserController::class, 'update']);
+    Route::delete('/user', [UserController::class, 'destroy']);
+
+
+    //プロフィール
+    Route::get('/profiles', [ProfileController::class, 'myProfiles']);
+    Route::get('my-profiles', [ProfileController::class, 'myProfiles']);
+    Route::post('profile', [ProfileController::class, 'create']);
+    Route::get('/profile', [ProfileController::class, 'find']);
+
+    //フレンズ
+    Route::get('/friends', [FriendController::class, 'myFriends']);
+    Route::post('/friend', [FriendController::class, 'addFriend']);
+
+    //グループ
+    Route::get('/groups', [GroupController::class, 'myGroups']);
+    Route::post('/group', [GroupController::class, 'addGroup']);
+
+
+
+    //ルーム
+    Route::get('/room/{room_id}', [MessageController::class, 'roomMessages']);
+    Route::post('/room/{room_id}/message', [MessageController::class, 'newMessage']);
+
+    Route::post('room/register', [RoomController::class, 'register']);
 });
 
 //プロフィール
@@ -58,9 +84,9 @@ Route::middleware('auth:api')->get('profile/{profile_id}/rooms', [RoomController
 Route::post('room/register', [RoomController::class, 'register']);
 
 // websocket connection
-Route::middleware('auth:api')->get('/messages/{room_id}', [MessageController::class, 'roomMessages']);
+
 Route::middleware('auth:api')->get('/room/{room_id}/profiles', [ProfileController::class, 'roomProfiles']);
-Route::middleware('auth:api')->post('/room/{room_id}/message', [MessageController::class, 'newMessage']);
+
 
 
 

@@ -5,28 +5,29 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-class Message extends Model
+
+class Friend extends Model
 {
     use HasFactory;
+
     protected $fillable = [
-        'body', 'room_id', 'user_id'
+        'user_id', 'profile_id', 'friend_user_id','friend_profile_id','room_id', 'state'
     ];
 
-    protected $guarded = [
 
-    ];
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
+
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
-    public function messages(): BelongsToMany
+    public function profile(): BelongsTo
     {
-        return $this->belongsToMany(Message::class, 'message_user')->withPivot('is_read');
+        return $this->belongsTo(Profile::class);
     }
-
 }

@@ -5,34 +5,32 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Profile extends Model
+
+class Group extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'account_type', 'name', 'caption', 'image', 'is_main'
+        'name', 'caption', 'image', 'room_id'
     ];
 
 
-    public function user(): BelongsTo
+    public function room(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Room::class);
     }
-    public function friends(): HasMany
+
+    public function profiles(): BelongsToMany
     {
-        return $this->hasMany(Friend::class);
+        return $this->belongsToMany(Profile::class, 'profile_group')->withPivot('user_id');
     }
-    // public function rooms(): BelongsToMany
-    // {
-    //     return $this->belongsToMany(Room::class, 'profile_');
-    // }
+
     public function toBase()
     {
-        $filePath = "public/profiles/" . $this->image;
+        $filePath = "public/group-images/" . $this->image;
         if (Storage::exists($filePath)) {
             $this->image = base64_encode(Storage::get($filePath));
         }

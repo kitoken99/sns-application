@@ -16,12 +16,8 @@ class ProfileController extends Controller
         $userId = $request->user()->id;
         $profiles = Profile::whereUserId($userId)->get()->pluck(null, "id");
         forEach($profiles as $profile){
-            $filePath = "public/profiles/" . $profile->image;
-        if (Storage::exists($filePath)) {
-            $profile->image = base64_encode(Storage::get($filePath));
+            $profile->toBase();
         }
-        }
-        $profiles = $profiles->keyBy('id')->map->toArray();
         return $profiles;
     }
 
@@ -38,6 +34,7 @@ class ProfileController extends Controller
     public function find(Request $request){
         $email = $request->input('email');
         $user = User::whereEmail($email)->first();
+
         $profile = $user->profiles()->whereIsMain(true)->first();
         $profile->toBase();
         return $profile;

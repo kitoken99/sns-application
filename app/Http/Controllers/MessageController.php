@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Message;
 use App\Models\Room;
+use App\Models\Friend;
 use Illuminate\Http\Request;
 use App\Events\MessageRecieved;
 use App\Models\MessageUser;
@@ -14,7 +15,6 @@ class MessageController extends Controller
 
     public function roomMessages(Request $request, $room_id){
         $messages =  Room::find($room_id)->messages()->get();
-        Log::debug("ここから");
 
 
         //既読処理
@@ -32,25 +32,26 @@ class MessageController extends Controller
     }
 
     public function newMessage(Request $request, $room_id){
+            Log::debug("konkon");
             $message = Message::create([
                 'user_id' => $request->user()->id,
                 'room_id' => $room_id,
                 'body' => request()->body
             ]);
-            $profiles = Room::find($room_id)->profiles()->get();
 
-            //未読処理
-            foreach ($profiles as $profile){
-                if($profile->user_id != $request->user()->id){
-                MessageUser::create([
-                    'user_id' => $profile->user_id,
-                    'message_id' => $message->id,
+            $members = Friend::whereRoomId($room_id)->get();
+            foreach($members as $member){
+                if($member->user_id != $request->user()->id){
+                    MessageUser::create([
+                        'user_id' => $member->user_id,
+                        'message_id' => $message->id,
                 ]);
             }
             }
+            $message["name"] = $request->user()->name;
             broadcast(new MessageRecieved($message));
             return $message;
-        
+
     }
 
 

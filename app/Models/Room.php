@@ -12,13 +12,12 @@ class Room extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'name',
     ];
 
-    public function profiles(): BelongsToMany
-    {
-        return $this->belongsToMany(Profile::class, 'profile_room');
-    }
+    // public function profiles(): BelongsToMany
+    // {
+    //     return $this->belongsToMany(Profile::class, 'profile_room');
+    // }
 
     public function messages(): HasMany
     {

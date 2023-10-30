@@ -74,6 +74,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Profile::class);
     }
+    public function friends(): HasMany
+    {
+        return $this->hasMany(Friend::class);
+    }
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(Group::class, 'profile_group')->withPivot('profile_id', 'state');
+    }
 
     public function messages(): BelongsToMany
     {
