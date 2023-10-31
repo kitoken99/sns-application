@@ -32,7 +32,7 @@ class MessageController extends Controller
     }
 
     public function newMessage(Request $request, $room_id){
-            Log::debug("konkon");
+
             $message = Message::create([
                 'user_id' => $request->user()->id,
                 'room_id' => $room_id,
@@ -48,6 +48,7 @@ class MessageController extends Controller
                 ]);
             }
             }
+            Log::debug($message);
             $message["name"] = $request->user()->name;
             broadcast(new MessageRecieved($message));
             return $message;

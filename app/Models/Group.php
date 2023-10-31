@@ -25,7 +25,7 @@ class Group extends Model
 
     public function profiles(): BelongsToMany
     {
-        return $this->belongsToMany(Profile::class, 'profile_group')->withPivot('user_id');
+        return $this->belongsToMany(Profile::class, 'profile_group');
     }
 
     public function toBase()

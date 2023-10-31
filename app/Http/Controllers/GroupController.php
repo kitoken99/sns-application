@@ -10,7 +10,7 @@ use App\Models\User;
 use App\Models\Profile;
 use App\Models\Message;
 use App\Models\ProfileGroup;
-
+use Illuminate\Support\Facades\Log;
 
 class GroupController extends Controller
 {
@@ -20,11 +20,20 @@ class GroupController extends Controller
         $groups = $request->user()->groups()->get();
         foreach($groups as $group){
             $group->toBase();
+            $group["my_profile_id"] = $group->profiles()->where('profiles.user_id', $request->user()->id)->first()->id;
             $group['not_read'] = $records->whereRoomId($group->room_id)->count();
+
+            // ラストメッセージ
             $last_message = Room::find($group->room_id)->messages()->latest('created_at')->first();
-            if($last_message)$last_message['name'] = $group->profiles()->whereUserId($last_message->user_id)->first()->name;
+            if($last_message){
+                $last_message['name'] = Profile::whereUserId($last_message->user_id)->first()->name;
+                $group['last_updated_at'] = $last_message->created_at;
+            }else{
+                $group['last_updated_at'] = Room::find($group->room_id)->created_at;
+            }
             $group['last_message'] = $last_message;
-            $group["members"] = $group->profiles()->get()->pluck(null, "user_id");;
+            //メンバーズ
+            $group["members"] = $group->profiles()->get()->pluck(null, "user_id");
             foreach($group["members"] as $profile){
                 $profile->toBase();
                 if($profile->show_birthday)$profile['birthday'] = $profile->user->birthday;

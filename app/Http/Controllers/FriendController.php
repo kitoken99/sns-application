@@ -23,13 +23,28 @@ class FriendController extends Controller
             $profile->toBase();
             $profile["state"] = $friend->state;
             $profile["my_profile_id"] = $friend->profile_id;
-            $profile['not_read'] = $records->whereRoomId($friend->room_id)->count();
             $profile['room_id'] = $friend->room_id;
+            $profile['not_read'] = $records->whereRoomId($friend->room_id)->count();
 
+            //ラストメッセージ
             $last_message = Room::find($friend->room_id)->messages()->latest('created_at')->first();
-            if($last_message)$last_message['name'] = Profile::whereUserId($last_message->user_id)->first()->name;
+            if($last_message){
+                $last_message['name'] = Profile::whereUserId($last_message->user_id)->first()->name;
+                $profile['last_updated_at'] = $last_message->created_at;
+            }else{
+                $profile['last_updated_at'] = Room::find($friend->room_id)->created_at;
+            }
             $profile['last_message'] = $last_message;
-
+            //メンバーズ
+            $members =[
+              $friend->user_id => Profile::find($friend->profile_id),
+              $friend->friend_user_id => Profile::find($friend->friend_profile_id),
+            ];
+            foreach($members as $member){
+                $member->toBase();
+                if($member->show_birthday)$member['birthday'] = $member->user->birthday;
+            }
+            $profile["members"] = $members;
             if($profile->show_birthday)$profile['birthday'] = $profile->user->birthday;
             array_push($profiles, $profile);
         }
@@ -64,6 +79,7 @@ class FriendController extends Controller
         $profile['room_id'] = $friend->room_id;
         $profile['last_message'] = null;
         if($profile->show_birthday)$profile['birthday'] = $profile->user->birthday;
+        Log::debug($profile->pluck(null, "room_id"));
         return $profile;
     }
 
