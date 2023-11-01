@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
-use App\Http\Controllers\API\BaseController as BaseController;
+use App\Http\Controllers\api\BaseController as BaseController;
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends BaseController
