@@ -47,7 +47,7 @@ class GroupController extends Controller
         return $response;
     }
 
-    public function addGroup(Request $request){
+    public function create(Request $request){
         $room = Room::create();
         $group = new Group();
         $group->fill([
@@ -85,13 +85,16 @@ class GroupController extends Controller
                 "profile_id" => $profile->id,
             ]);
         };
-
-
-
+        //レスポンスデータ
+        //プロファイルID
         $group = Group::find($group->id);
+        $profile_id = [];
+        array_push($profile_id, Profile::find($request->profile_id)->id);
+        array_push($profile_id, $request->user()->profiles()->whereIsMain(true)->first()->id);
+        $response["profile_id"] = $profile_id;
+        //グループデータ
         $group->toBase();
         $group_data['id'] = $group->id;
-        $group_data['profile_id'] = $group->profile_id;
         $group_data['name'] = $group->name;
         $group_data['caption'] = $group->caption;
         $group_data['image'] = $group->image;
@@ -101,9 +104,23 @@ class GroupController extends Controller
         foreach ($profiles as $profile){
             $group_data["members"][$profile->user_id] = $profile->id;
         }
-        $group_data['state'] = $group->pivot->state;
+        $group_data['state'] = "accepted";
         $response["group"] = $group_data;
-;
+        //ルームデータ
+        $response_room['room_id'] = $group->room_id;
+        $response_room['profile_id'] = $profile_id;
+        $response_room["name"] = $group->name;
+        $response_room['caption'] = $group->caption;
+        $response_room['image'] = $group->image;
+        $response_room['members'] = [];
+        $profiles = Room::find($group->room_id)->profiles();
+        foreach ($profiles as $profile){
+            $response_room["members"][$group->user_id] = $group->profile_id;
+        }
+        $response_room['not_read'] = "0";
+        $response_room['last_message'] = null;
+        $response_room['last_updated_at'] = Room::find($group->room_id)->created_at;
+        $response['room'] = $response_room;
         return $response;
 
 

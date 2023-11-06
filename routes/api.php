@@ -32,13 +32,11 @@ Route::group(['middleware' => "auth:api" ], function () {
     Route::patch('/user/password', [UserController::class, 'updatePassword']);
     Route::delete('/user', [UserController::class, 'destroy']);
 
-
     //プロフィール
     Route::get('/user/profiles', [ProfileController::class, 'myProfiles']);
     Route::get('/profiles', [ProfileController::class, 'get']);
     Route::post('/profile', [ProfileController::class, 'create']);
     Route::get('/profile', [ProfileController::class, 'find']);
-
 
     //フレンド
     Route::get('/friendship', [FriendController::class, 'get']);
@@ -46,7 +44,7 @@ Route::group(['middleware' => "auth:api" ], function () {
 
     //グループ
     Route::get('/groups', [GroupController::class, 'get']);
-    Route::post('/group', [GroupController::class, 'addGroup']);
+    Route::post('/group', [GroupController::class, 'create']);
 
 
 

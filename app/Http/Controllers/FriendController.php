@@ -5,12 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\RoomProfile;
 use App\Models\Room;
-use App\Models\User;
 use App\Models\Profile;
-use App\Models\Message;
 use App\Models\Friend;
-
-use Illuminate\Support\Facades\Log;
 
 
 class FriendController extends Controller
@@ -109,6 +105,7 @@ class FriendController extends Controller
         }
         $response_room['not_read'] = "0";
         $response_room['last_message'] = null;
+        $response_room['last_updated_at'] = Room::find($friend->room_id)->created_at;
         $response['room'] = $response_room;
         return $response;
     }
