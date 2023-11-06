@@ -42,7 +42,7 @@ Route::group(['middleware' => "auth:api" ], function () {
 
     //フレンド
     Route::get('/friendship', [FriendController::class, 'get']);
-    Route::post('/friend', [FriendController::class, 'addFriend']);
+    Route::post('/friendship', [FriendController::class, 'create']);
 
     //グループ
     Route::get('/groups', [GroupController::class, 'get']);
