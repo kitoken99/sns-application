@@ -28,11 +28,16 @@ class Group extends Model
         return $this->belongsToMany(Profile::class, 'profile_group');
     }
 
-    public function toBase()
-    {
+    public function toBase(){
         $filePath = "public/group-images/" . $this->image;
         if (Storage::exists($filePath)) {
             $this->image = base64_encode(Storage::get($filePath));
         }
+    }
+    public function saveImage($image){
+        $image->store('public/group-images');
+        $file_name = $image->getClientOriginalName();
+        $image->storeAs('public/group-images', $file_name);
+        $this->fill(["image" => $file_name,]);
     }
 }

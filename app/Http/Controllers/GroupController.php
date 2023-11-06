@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Profile_Room;
 use App\Models\Room;
 use App\Models\Group;
-use App\Models\User;
+use App\Models\RoomProfile;
 use App\Models\Profile;
 use App\Models\Message;
 use App\Models\ProfileGroup;
@@ -15,31 +15,36 @@ use Illuminate\Support\Facades\Log;
 class GroupController extends Controller
 {
 
-    public function myGroups(Request $request){
-        $records = $request->user()->messages()->where('is_read', false);
+    public function get(Request $request){
+        $response = [];
+        $profiles = $request->user()->profiles()->get();
         $groups = $request->user()->groups()->get();
-        foreach($groups as $group){
-            $group->toBase();
-            $group["my_profile_id"] = $group->profiles()->where('profiles.user_id', $request->user()->id)->first()->id;
-            $group['not_read'] = $records->whereRoomId($group->room_id)->count();
-
-            // ラストメッセージ
-            $last_message = Room::find($group->room_id)->messages()->latest('created_at')->first();
-            if($last_message){
-                $last_message['name'] = Profile::whereUserId($last_message->user_id)->first()->name;
-                $group['last_updated_at'] = $last_message->created_at;
-            }else{
-                $group['last_updated_at'] = Room::find($group->room_id)->created_at;
-            }
-            $group['last_message'] = $last_message;
-            //メンバーズ
-            $group["members"] = $group->profiles()->get()->pluck(null, "user_id");
-            foreach($group["members"] as $profile){
-                $profile->toBase();
-                if($profile->show_birthday)$profile['birthday'] = $profile->user->birthday;
+        foreach ($profiles as $profile){
+            $response[$profile->id] = [];
+            if($profile->is_main){
+                $main_profile_id = $profile->id;
             }
         }
-        return $groups;
+        foreach($groups as $group){
+            $group->toBase();
+            $group_data['id'] = $group->id;
+            $group_data['profile_id'] = $group->profile_id;
+            $group_data['name'] = $group->name;
+            $group_data['caption'] = $group->caption;
+            $group_data['image'] = $group->image;
+            $group_data['members'] = [];
+            $group_data['room_id'] = $group->room_id;
+            $profiles = Room::find($group->room_id)->profiles();
+            foreach ($profiles as $profile){
+                $group_data["members"][$profile->user_id] = $profile->id;
+            }
+            $group_data['state'] = $group->pivot->state;
+            $response[$group->pivot->profile_id][$group->id] = $group_data;
+            if($main_profile_id!=$group->pivot->profile_id){
+                $response[$main_profile_id][$group->id] = $group_data;
+            }
+        }
+        return $response;
     }
 
     public function addGroup(Request $request){
@@ -51,10 +56,7 @@ class GroupController extends Controller
             "room_id" => $room->id,
         ]);
         if($request->file('image')){
-            $request->file('image')->store('public/group-images');
-            $file_name = $request->file('image')->getClientOriginalName();
-            $request->file('image')->storeAs('public/group-images', $file_name);
-            $group->fill(["image" => $file_name,]);
+            $group->saveImage($request->file('image'));
         }
         $group->save();
 
@@ -64,6 +66,11 @@ class GroupController extends Controller
             "group_id" => $group->id,
             "state" => "accepted"
         ]);
+        RoomProfile::create([
+            "room_id" => $room->id,
+            "user_id" => $request->user()->id,
+            "profile_id" => $request->profile_id,
+        ]);
         $group_member_user_ids = $request->ids;
         foreach ($group_member_user_ids as $user_id){
             $profile = Profile::whereUserId($user_id)->whereIsMain(true)->first();
@@ -72,22 +79,32 @@ class GroupController extends Controller
                 "profile_id" => $profile->id,
                 "group_id" => $group->id
             ]);
+            RoomProfile::create([
+                "room_id" => $room->id,
+                "user_id" => $user_id,
+                "profile_id" => $profile->id,
+            ]);
         };
+
 
 
         $group = Group::find($group->id);
         $group->toBase();
-        $profile["state"] = "accepted";
-        $profile['not_read'] = "0";
-        $profile['room_id'] = $room->id;
-        $profile['last_message'] = null;
-        $group["members"] = $group->profiles()->get()->pluck(null, "user_id");;
-        foreach($group["members"] as $profile){
-            $profile->toBase();
-            if($profile->show_birthday)$profile['birthday'] = $profile->user->birthday;
-
+        $group_data['id'] = $group->id;
+        $group_data['profile_id'] = $group->profile_id;
+        $group_data['name'] = $group->name;
+        $group_data['caption'] = $group->caption;
+        $group_data['image'] = $group->image;
+        $group_data['room_id'] = $group->room_id;
+        $group_data['members'] = [];
+        $profiles = Room::find($group->room_id)->profiles();
+        foreach ($profiles as $profile){
+            $group_data["members"][$profile->user_id] = $profile->id;
         }
-        return $group;
+        $group_data['state'] = $group->pivot->state;
+        $response["group"] = $group_data;
+;
+        return $response;
 
 
     }

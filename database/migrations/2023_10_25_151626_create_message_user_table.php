@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('message_id');
             $table->boolean('is_read')->default(false);
             $table->timestamps();
+            
         });
     }
 

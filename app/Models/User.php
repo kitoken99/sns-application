@@ -12,6 +12,7 @@ use Laravel\Jetstream\HasTeams;
 use Laravel\Passport\HasApiTokens;
 use App\Models\Provider;
 use App\Models\Message;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -24,6 +25,7 @@ class User extends Authenticatable
     use HasTeams;
     use Notifiable;
     use TwoFactorAuthenticatable;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -31,7 +33,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name', 'email', 'password', 'auth_type',
+        'name', 'email', 'password', 'auth_type', 'exist'
     ];
 
     /**
@@ -40,7 +42,9 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $hidden = [
-        'auth_type',
+        'created_at',
+        'updated_at',
+        'deleted_at',
         'password',
         'remember_token',
         'two_factor_recovery_codes',

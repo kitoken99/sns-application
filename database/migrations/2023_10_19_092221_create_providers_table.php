@@ -12,13 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('providers', function (Blueprint $table) {
+            $table->id();
             $table->foreignId('user_id')->constrained();
             $table->string('provider_name');
             $table->string('provider_user_id');
-            $table->primary(['provider_name', 'provider_user_id']);
-            $table->unique(['user_id', 'provider_name']);
+            $table->boolean('exist')->nullable()->default(true);
+            $table->unique(['provider_name', 'provider_user_id', 'exist']);
+            $table->unique(['user_id', 'provider_name', 'exist']);
             $table->date('birth_date')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

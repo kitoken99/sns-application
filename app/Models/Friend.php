@@ -13,7 +13,7 @@ class Friend extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'profile_id', 'friend_user_id','friend_profile_id','room_id', 'state'
+        'user_id', 'profile_id', 'friend_user_id','friend_profile_id','room_id', 'state','is_top'
     ];
 
 

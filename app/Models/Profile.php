@@ -8,13 +8,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Profile extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
-        'user_id', 'account_type', 'name', 'caption', 'image', 'is_main'
+        'user_id', 'account_type', 'name', 'caption', 'image', 'is_main', 'exist'
+    ];
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+        'deleted_at',
     ];
 
 

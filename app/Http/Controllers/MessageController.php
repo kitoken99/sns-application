@@ -32,7 +32,6 @@ class MessageController extends Controller
     }
 
     public function newMessage(Request $request, $room_id){
-
             $message = Message::create([
                 'user_id' => $request->user()->id,
                 'room_id' => $room_id,
@@ -48,13 +47,15 @@ class MessageController extends Controller
                 ]);
             }
             }
-            Log::debug($message);
-            $message["name"] = $request->user()->name;
             broadcast(new MessageRecieved($message));
             return $message;
+    }
+    public function readMessages(Request $request, $room_id){
+        $message = MessageUser::where('message_id', $request->query('id'))->whereUserId($request->user()->id)->get();
+        $message->is_read = true;
+        return $message->save();
 
     }
-
 
     public function store(Request $request)
     {

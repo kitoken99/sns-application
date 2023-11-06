@@ -1,18 +1,17 @@
 <?php
 
-namespace App\Http\Controllers\api;
+namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\LoginRequest;
-use App\Http\Controllers\api\BaseController as BaseController;
 use App\Models\User;
 use App\Models\Profile;
 use Illuminate\Support\Facades\Hash;
-use Validator;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 
 
-class RegisterController extends BaseController
+class AuthController extends Controller
 {
 
     public function register(Request $request): JsonResponse
@@ -24,8 +23,10 @@ class RegisterController extends BaseController
             'c_password' => 'required|same:password',
         ]);
 
-        if($validator->fails()){
-            return $this->sendError('Validation Error.', $validator->errors(), 422);
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+            ], 422);
         }
 
         $user = User::create([
@@ -41,8 +42,8 @@ class RegisterController extends BaseController
             'is_main' => true
         ]);
 
-        $success['token'] =  $user->createToken('MyApp')->accessToken;
-        return $this->sendResponse($success, 'User register successfully.', 201);
+        $token =  $user->createToken('MyApp')->accessToken;
+        return response()->json(['token' => $token,], 201);
     }
 
 
@@ -51,14 +52,15 @@ class RegisterController extends BaseController
         $existingUser = User::whereEmail($request->email)->first();
         if($existingUser){
             if($existingUser->auth_type == "social"){
-                $errors = ["email" => ["Please login with Social Account"]];
-                return BaseController::sendError('Authentication Error.', $errors, 422);
+                return response()->json([
+                    'errors' => ["email" => ["Please login with Social Account"]]
+                ], 422);
             }
         }
         $request->authenticate();
             $user = auth()->user();
-            $success['token'] =  $user->createToken('MyApp')-> accessToken;
-            return $this->sendResponse($success, 'User login successfully.', 201);
+            $token =  $user->createToken('MyApp')->accessToken;
+            return response()->json(['token' => $token,], 201);
 
     }
 }
