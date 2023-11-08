@@ -46,15 +46,13 @@ Route::group(['middleware' => "auth:api" ], function () {
     Route::get('/groups', [GroupController::class, 'get']);
     Route::post('/group', [GroupController::class, 'create']);
 
-
-
     //ルーム
     Route::get('/rooms', [RoomController::class, 'get']);
-    Route::get('/room/{room_id}', [MessageController::class, 'roomMessages']);
-    Route::post('/room/{room_id}/message', [MessageController::class, 'newMessage']);
-    Route::post('/room/{room_id}/read', [MessageController::class, 'readMessage']);
 
-    Route::post('room/register', [RoomController::class, 'register']);
+    //メッセージ
+    Route::get('/room/{room_id}/messages', [MessageController::class, 'get']);
+    Route::post('/room/{room_id}/message', [MessageController::class, 'new']);
+    Route::post('/message/read', [MessageController::class, 'read']);
 });
 
 

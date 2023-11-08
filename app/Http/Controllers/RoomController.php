@@ -96,23 +96,4 @@ class RoomController extends Controller
         return $rooms;
     }
 
-    public function register(Request $request)
-    {
-        $room = Room::create([
-            'name' => $request->name == "" ? "" : $request->name,
-        ]);
-
-        $profileIds = $request->profileIds;
-
-        foreach ($profileIds as $profileId) {
-            $profile = Profile::whereId($profileId)->first();
-            $profile->rooms()->sync($room->id);
-        };
-        $emails = $request->emails;
-        foreach ($emails as $email) {
-            $user = User::whereEmail($email)->first();
-            $profile = $user->profiles()->whereAccountType('authenticator')->first();
-            $profile->rooms()->sync($room->id);
-        };
-    }
 }
