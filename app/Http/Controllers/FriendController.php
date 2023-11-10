@@ -20,7 +20,11 @@ class FriendController extends Controller
         $friends = $request->user()->friends()->get();
         foreach($friends as $friend){
             if($friend->is_top){
-                $response[$friend->profile_id][$friend->friend_user_id] = $friend->friend_profile_id;
+                $response[$friend->profile_id][$friend->friend_user_id]["profile_id"] = $friend->friend_profile_id;
+                $response[$friend->profile_id][$friend->friend_user_id]["state"] = $friend->state;
+                if(!Profile::find($friend->friend_profile_id)){
+                    $response[$friend->profile_id][$friend->friend_user_id]["state"] = "deleted";
+                }
             }
         }
         return $response;
@@ -86,7 +90,7 @@ class FriendController extends Controller
         }
 
         //レスポンスデータ
-        $main_profile_id = $user->profiles()->whereIsMain(true)->first();
+        $main_profile_id = $user->profiles()->whereIsMain(true)->first()->id;
         $profile = Profile::find($friend->friend_profile_id);
         $profile->toBase();
         $response['profile'] = $profile;
