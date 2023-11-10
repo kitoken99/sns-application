@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Room;
 use App\Models\Profile;
+use App\Models\ProfileGroup;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
@@ -44,19 +45,21 @@ class ProfileController extends Controller
             }else{
                 $response[$friend->friend_user_id][$friend->friend_profile_id] = $default_profile;
                 $response[$friend->friend_user_id][$friend->friend_profile_id]["user_id"] = $friend->friend_user_id;
+                Log::debug($response[$friend->friend_user_id][$friend->friend_profile_id]);
             }
         }
         //profiles in group
         $groups = $request->user()->groups()->get();
         foreach ($groups as $group){
-            $profiles = Room::find($group->room_id)->profiles();
-            foreach ($profiles as $profile){
+            $group_profiles= ProfileGroup::whereGroupId($group->id)->get();
+            foreach ($group_profiles as $group_profile){
+                $profile = Profile::find($group_profile->profile_id);
                 if($profile){
                     $profile->toBase();
                     $response[$profile->user_id][$profile->id] = $profile;
                 }else{
-                    $response[$friend->friend_user_id][$friend->friend_profile_id] = $default_profile;
-                    $response[$friend->friend_user_id][$friend->friend_profile_id]["user_id"] = $friend->friend_user_id;
+                    $response[$group_profile->user_id][$group_profile->profile_id] = $default_profile;
+                    $response[$group_profile->user_id][$group_profile->profile_id]["user_id"] = $group_profile->user_id;
                 }
             }
 
