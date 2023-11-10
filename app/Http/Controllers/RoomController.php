@@ -7,7 +7,7 @@ use App\Models\Profile_Room;
 use App\Models\Room;
 use App\Models\User;
 use App\Models\Profile;
-use App\Models\Message;
+use App\Models\RoomProfile;
 
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -39,17 +39,17 @@ class RoomController extends Controller
                 continue;
             }
             $profile = Profile::find($friend->friend_profile_id);
-            $profile->toBase();
+            if($profile)$profile->toBase();
             $room['room_id'] = $friend->room_id;
             $room['profile_id'] = [];
             array_push($room['profile_id'], $friend->profile_id);
-            $room["name"] = $profile->name;
-            $room['caption'] = $profile->caption;
-            $room['image'] = $profile->image;
+            $room["name"] = $profile?$profile->name:"unknown";
+            $room['caption'] = $profile?$profile->caption:"";
+            $room['image'] = $profile?$profile->image:base64_encode(Storage::get( "public/profiles/user_default.image.png"));
             $room['members'] = [];
-            $profiles = Room::find($friend->room_id)->profiles();
-            foreach ($profiles as $profile){
-                $room["members"][$profile->user_id] = null;
+            $room_profiles = RoomProfile::whereRoomId($friend->room_id)->get();
+            foreach ($room_profiles as $room_profile){
+                $room["members"][$room_profile->user_id] = null;
             }
             $room['not_read'] = $records->whereRoomId($friend->room_id)->count();
             $last_message = Room::find($friend->room_id)->messages()->latest('created_at')->first();
@@ -73,9 +73,9 @@ class RoomController extends Controller
             $group_data['caption'] = $group->caption;
             $group_data['image'] = $group->image;
             $group_data['members'] = [];
-            $profiles = Room::find($group->room_id)->profiles();
-            foreach ($profiles as $profile){
-                $group_data["members"][$profile->user_id] = $profile->id;
+            $roomProfiles = RoomProfile::whereRoomId($group->room_id)->get();
+            foreach ($roomProfiles as $roomProfile){
+                $group_data["members"][$roomProfile->user_id] = $roomProfile->profile_id;
             }
             $group_data['not_read'] = $records->whereRoomId($group->room_id)->count();
             $group_data['profile_id'] = [];

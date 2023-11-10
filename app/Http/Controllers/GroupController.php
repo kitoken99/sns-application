@@ -34,9 +34,9 @@ class GroupController extends Controller
             $group_data['image'] = $group->image;
             $group_data['members'] = [];
             $group_data['room_id'] = $group->room_id;
-            $profiles = Room::find($group->room_id)->profiles();
-            foreach ($profiles as $profile){
-                $group_data["members"][$profile->user_id] = $profile->id;
+            $roomProfiles = RoomProfile::whereRoomId($group->room_id)->get();
+            foreach ($roomProfiles as $roomProfile){
+                $group_data["members"][$roomProfile->user_id] = $roomProfile->profile_id;
             }
             $group_data['state'] = $group->pivot->state;
             $response[$group->pivot->profile_id][$group->id] = $group_data;

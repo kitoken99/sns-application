@@ -49,7 +49,7 @@ class UserController extends Controller
             ]);
             $user = User::find($request->user()->id);
             return response()->json(['result' => "updated", "user" => $user] , 201);
-        }
+    }
 
     public function destroy(Request $request){
         $user = $request->user();

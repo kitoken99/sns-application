@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Profile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\JsonResponse;
 
 
@@ -18,7 +19,10 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'email' => 'required|email|unique:users,email',
+            'email' => ['required', 'email', Rule::unique('users')->where(function ($query) use ($request) {
+                return $query->where('email', $request->email)->where('exist', true);
+            }),
+        ],
             'password' => 'required',
             'c_password' => 'required|same:password',
         ]);

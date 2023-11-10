@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Room;
 use App\Models\Profile;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 
 class ProfileController extends Controller
@@ -20,6 +22,12 @@ class ProfileController extends Controller
 
     public function get(Request $request){
         $response = [];
+        $default_profile = [
+            "name" => "unknown",
+            "caption" => "",
+            "image" => base64_encode(Storage::get("public/profiles/user_default.image.png")),
+            "show_barthdays" => false,
+        ];
         //my profiles
         $profiles = $request->user()->profiles()->get();
         foreach($profiles as $profile){
@@ -30,16 +38,26 @@ class ProfileController extends Controller
         $friends = $request->user()->friends()->get();
         foreach ($friends as $friend){
             $profile = Profile::find($friend->friend_profile_id);
-            $profile->toBase();
-            $response[$profile->user_id][$profile->id] = $profile;
+            if($profile){
+                $profile->toBase();
+                $response[$profile->user_id][$profile->id] = $profile;
+            }else{
+                $response[$friend->friend_user_id][$friend->friend_profile_id] = $default_profile;
+                $response[$friend->friend_user_id][$friend->friend_profile_id]["user_id"] = $friend->friend_user_id;
+            }
         }
         //profiles in group
         $groups = $request->user()->groups()->get();
         foreach ($groups as $group){
             $profiles = Room::find($group->room_id)->profiles();
             foreach ($profiles as $profile){
-                $profile->toBase();
-                $response[$profile->user_id][$profile->id] = $profile;
+                if($profile){
+                    $profile->toBase();
+                    $response[$profile->user_id][$profile->id] = $profile;
+                }else{
+                    $response[$friend->friend_user_id][$friend->friend_profile_id] = $default_profile;
+                    $response[$friend->friend_user_id][$friend->friend_profile_id]["user_id"] = $friend->friend_user_id;
+                }
             }
 
         }
