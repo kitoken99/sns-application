@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 
 
 class UserController extends Controller
@@ -20,7 +18,7 @@ class UserController extends Controller
         $user = $request->user();
         $user->name = $request->name;
         $user->email = $request->email;
-        $user->birth_day = $request->birthday;
+        $user->birthday = $request->birthday;
         $user->save();
         return User::find($user->id);
     }

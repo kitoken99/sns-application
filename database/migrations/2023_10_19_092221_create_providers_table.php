@@ -19,7 +19,6 @@ return new class extends Migration
             $table->boolean('exist')->nullable()->default(true);
             $table->unique(['provider_name', 'provider_user_id', 'exist']);
             $table->unique(['user_id', 'provider_name', 'exist']);
-            $table->date('birth_date')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -10,8 +10,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\GroupController;
-use App\Events\MessageRecieved;
-use Illuminate\Support\Facades\Log;
+
 
 
 // 通常認証
@@ -35,8 +34,10 @@ Route::group(['middleware' => "auth:api" ], function () {
     //プロフィール
     Route::get('/user/profiles', [ProfileController::class, 'myProfiles']);
     Route::get('/profiles', [ProfileController::class, 'get']);
-    Route::post('/profile', [ProfileController::class, 'create']);
     Route::get('/profile', [ProfileController::class, 'find']);
+    Route::post('/profile', [ProfileController::class, 'create']);
+    Route::patch('/profile', [ProfileController::class, 'update']);
+
 
     //フレンド
     Route::get('/friendship', [FriendController::class, 'get']);

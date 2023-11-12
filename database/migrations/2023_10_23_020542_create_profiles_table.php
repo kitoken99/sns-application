@@ -19,7 +19,7 @@ return new class extends Migration
             $table->boolean('exist')->nullable()->default(true);
             $table->text('caption')->nullable();
             $table->string('image')->default('user_default.image.png');
-            $table->boolean('show_barthday')->default(false);
+            $table->boolean('show_birthday')->default(false);
             $table->boolean('is_main')->default(false);
             $table->unique(['user_id', 'account_type', 'exist']);
             $table->timestamps();

@@ -16,7 +16,7 @@ class Profile extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'user_id', 'account_type', 'name', 'caption', 'image', 'is_main', 'exist'
+        'user_id', 'account_type', 'name', 'caption', 'image', 'is_main', 'exist', 'show_birthday'
     ];
     protected $hidden = [
         'created_at',

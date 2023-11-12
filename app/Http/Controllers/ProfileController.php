@@ -17,6 +17,7 @@ class ProfileController extends Controller
         $profiles = $request->user()->profiles()->get();
         foreach($profiles as $profile){
             $profile->toBase();
+            $profile->birthday = $request->user()->birthday;
         }
         return $profiles->pluck(null, 'id');
     }
@@ -27,7 +28,7 @@ class ProfileController extends Controller
             "name" => "unknown",
             "caption" => "",
             "image" => base64_encode(Storage::get("public/profiles/user_default.image.png")),
-            "show_barthdays" => false,
+            "show_barthday" => false,
         ];
         //my profiles
         $profiles = $request->user()->profiles()->get();
@@ -99,5 +100,21 @@ class ProfileController extends Controller
         $profile = Profile::find($profile->id);
         $profile->toBase();
         return $profile;
+    }
+
+    public function update(Request $request){
+        $profile = Profile::find($request->profile->id);
+        $profile->account_type = $request->profile->account_type;
+        $profile->name = $request->profile->name;
+        $profile->caption = $request->profile->caption;
+        $profile->show_birthday = $request->profile->show_birthday;
+        if($request->profile->file('image')){
+            $request->profile->file('image')->store('public/profiles');
+            $file_name = $request->file('image')->getClientOriginalName();
+            $request->file('image')->storeAs('public/profiles', $file_name);
+            $profile->image = $file_name;
+        }
+        $profile->save();
+        return Profile::find($request->profile->id);
     }
 }

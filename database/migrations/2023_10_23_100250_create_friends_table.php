@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('friends', function (Blueprint $table) {
+            $table->id();
             $table->foreignId('user_id')->constrained()->name('my_user_id');
             $table->foreignId('profile_id')->constrained();
             $table->unsignedBigInteger('friend_user_id');
