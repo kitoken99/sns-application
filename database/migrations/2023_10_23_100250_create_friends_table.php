@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('friends', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->name('my_user_id');
-            $table->foreignId('profile_id')->constrained();
+            $table->foreignId('user_id')->constrained();
             $table->unsignedBigInteger('friend_user_id');
-            $table->unsignedBigInteger('friend_profile_id');
+            $table->unsignedBigInteger('permitting_id');
+            $table->unsignedBigInteger('permitted_id');
+            $table->foreignId('profile_id')->constrained()->name('focused_profile_id');
             $table->foreignId('room_id')->constrained();
             $table->string('state')->default("not_friend");
-            $table->boolean('is_top')->default(false);
             $table->timestamps();
         });
     }

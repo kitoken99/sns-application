@@ -7,12 +7,14 @@ use App\Models\User;
 use App\Models\Room;
 use App\Models\Profile;
 use App\Models\ProfileGroup;
+use App\Models\Permition;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
 
 class ProfileController extends Controller
 {
+
     public function myProfiles(Request $request){
         $profiles = $request->user()->profiles()->get();
         foreach($profiles as $profile){
@@ -39,15 +41,19 @@ class ProfileController extends Controller
         //friends profiles
         $friends = $request->user()->friends()->get();
         foreach ($friends as $friend){
-            $profile = Profile::find($friend->friend_profile_id);
-            if($profile){
-                $profile->toBase();
-                $response[$profile->user_id][$profile->id] = $profile;
-            }else{
-                $response[$friend->friend_user_id][$friend->friend_profile_id] = $default_profile;
-                $response[$friend->friend_user_id][$friend->friend_profile_id]["user_id"] = $friend->friend_user_id;
-                Log::debug($response[$friend->friend_user_id][$friend->friend_profile_id]);
+            $permitted_profiles = Permition::find($friend->permitted_id)->permittedProfiles()->get();
+            foreach($permitted_profiles as $permitted_profile){
+                $profile = Profile::find($permitted_profile->profile_id);
+                if($profile){
+                    $profile->toBase();
+                    $response[$profile->user_id][$profile->id] = $profile;
+                }else{
+                    $response[$friend->friend_user_id][$friend->friend_profile_id] = $default_profile;
+                    $response[$friend->friend_user_id][$friend->friend_profile_id]["user_id"] = $friend->friend_user_id;
+                }
             }
+
+
         }
         //profiles in group
         $groups = $request->user()->groups()->get();

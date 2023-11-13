@@ -8,7 +8,7 @@ use App\Models\Room;
 use App\Models\User;
 use App\Models\Profile;
 use App\Models\RoomProfile;
-
+use App\Models\Permition;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
@@ -38,11 +38,14 @@ class RoomController extends Controller
                 array_push($rooms[$friend->room_id]['profile_id'], $friend->profile_id);
                 continue;
             }
-            $profile = Profile::find($friend->friend_profile_id);
+            $profile = Profile::find($friend->profile_id);
             if($profile)$profile->toBase();
             $room['room_id'] = $friend->room_id;
             $room['profile_id'] = [];
-            array_push($room['profile_id'], $friend->profile_id);
+            $permitting_profiles = Permition::find($friend->permitting_id)->permittedProfiles()->get();
+            foreach($permitting_profiles as $permitting_profile){
+                array_push($room['profile_id'], $permitting_profile->profile_id);
+            }
             $room["name"] = $profile?$profile->name:"unknown";
             $room['caption'] = $profile?$profile->caption:"";
             $room['image'] = $profile?$profile->image:base64_encode(Storage::get( "public/profiles/user_default.image.png"));

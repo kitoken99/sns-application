@@ -42,6 +42,8 @@ Route::group(['middleware' => "auth:api" ], function () {
     //フレンド
     Route::get('/friendship', [FriendController::class, 'get']);
     Route::post('/friendship', [FriendController::class, 'create']);
+    Route::patch('/friendship/feature', [FriendController::class, 'updateFeaturedProfile']);
+    Route::post('/friendship/permit', [FriendController::class, 'updatePermition']);
 
     //グループ
     Route::get('/groups', [GroupController::class, 'get']);

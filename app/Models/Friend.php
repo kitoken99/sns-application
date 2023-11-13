@@ -13,7 +13,7 @@ class Friend extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'profile_id', 'friend_user_id','friend_profile_id','room_id', 'state','is_top'
+        'user_id','friend_user_id', 'permitting_id', 'permitted_id', 'profile_id', 'room_id', 'state'
     ];
 
 
@@ -21,13 +21,13 @@ class Friend extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    public function room(): BelongsTo
-    {
-        return $this->belongsTo(Room::class);
-    }
     public function profile(): BelongsTo
     {
         return $this->belongsTo(Profile::class);
     }
+    public function room(): BelongsTo
+    {
+        return $this->belongsTo(Room::class);
+    }
+
 }
