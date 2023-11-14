@@ -36,7 +36,7 @@ Route::group(['middleware' => "auth:api" ], function () {
     Route::get('/profiles', [ProfileController::class, 'get']);
     Route::get('/profile', [ProfileController::class, 'find']);
     Route::post('/profile', [ProfileController::class, 'create']);
-    Route::patch('/profile', [ProfileController::class, 'update']);
+    Route::post('/profile/{id}', [ProfileController::class, 'update']);
 
 
     //フレンド

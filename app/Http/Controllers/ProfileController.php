@@ -109,18 +109,22 @@ class ProfileController extends Controller
     }
 
     public function update(Request $request){
-        $profile = Profile::find($request->profile->id);
-        $profile->account_type = $request->profile->account_type;
-        $profile->name = $request->profile->name;
-        $profile->caption = $request->profile->caption;
-        $profile->show_birthday = $request->profile->show_birthday;
-        if($request->profile->file('image')){
-            $request->profile->file('image')->store('public/profiles');
+        $profile = Profile::find($request->input('id'));
+        $profile->account_type = $request->account_type;
+        $profile->name = $request->name;
+        $profile->caption = $request->caption;
+        $profile->show_birthday = $request->show_birthday==1;
+        if($request->file('image')){
+            $request->file('image')->store('public/profiles');
             $file_name = $request->file('image')->getClientOriginalName();
             $request->file('image')->storeAs('public/profiles', $file_name);
             $profile->image = $file_name;
         }
         $profile->save();
-        return Profile::find($request->profile->id);
+        if($profile->show_birthday){
+            $profile->birthday = $request->user()->birthday;
+        }
+        $profile->toBase();
+        return $profile;
     }
 }

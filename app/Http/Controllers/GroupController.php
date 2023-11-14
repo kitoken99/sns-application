@@ -115,7 +115,7 @@ class GroupController extends Controller
         $response_room['members'] = [];
         $profiles = Room::find($group->room_id)->profiles();
         foreach ($profiles as $profile){
-            $response_room["members"][$group->user_id] = $group->profile_id;
+            $response_room["members"][$profile->user_id] = $profile->id;
         }
         $response_room['not_read'] = "0";
         $response_room['last_message'] = null;
