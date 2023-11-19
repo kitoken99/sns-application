@@ -42,6 +42,12 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $hidden = [
+        'two_factor_confirmed_at',
+        'current_team_id',
+        'email_verified_at',
+        'exist',
+        'profile_photo_path',
+        'profile_photo_url',
         'created_at',
         'updated_at',
         'deleted_at',
@@ -65,9 +71,9 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $appends = [
-        'profile_photo_url',
-    ];
+    // protected $appends = [
+    //     'profile_photo_url',
+    // ];
 
     public function providers(): HasMany
     {
@@ -78,9 +84,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Profile::class);
     }
-    public function friends(): HasMany
+    public function friendships(): HasMany
     {
-        return $this->hasMany(Friend::class);
+        return $this->hasMany(Friendship::class);
     }
     public function groups(): BelongsToMany
     {

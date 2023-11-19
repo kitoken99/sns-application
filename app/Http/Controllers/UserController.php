@@ -24,29 +24,31 @@ class UserController extends Controller
     }
 
     public function updatePassword(Request $request){
+        //既存パスワードと比較
         if ($request->user()->auth_type!="social" && !Hash::check($request->previous_password, $request->user()->password)) {
             return response()->json(['result' => 'Unauthorized'], 401);
         }
-            $validator = Validator::make($request->only('new_password', 'confirm_new_password'), [
-                'new_password' => 'required',
-                'confirm_new_password' => 'required|same:new_password',
-            ]);
-            if ($validator->fails()) {
-                return response()->json([
-                    'errors' => $validator->errors(),
-                ], 422);
-            }
-            if ($request->user()->auth_type!="social") {
-                $auth_type = $request->user()->auth_type;
-            }else{
-                $auth_type = 'both';
-            }
-            $request->user()->update([
-                    'password' => Hash::make($request->new_password),
-                    'auth_type' => $auth_type
-            ]);
-            $user = User::find($request->user()->id);
-            return response()->json(['result' => "updated", "user" => $user] , 201);
+        //バリデーションチェック
+        $validator = Validator::make($request->only('new_password', 'confirm_new_password'), [
+            'new_password' => 'required',
+            'confirm_new_password' => 'required|same:new_password',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+        //ユーザーアップデート
+        if ($request->user()->auth_type!="social") {
+            $auth_type = $request->user()->auth_type;
+        }else{
+            $auth_type = 'both';
+        }
+        $request->user()->update([
+                'password' => Hash::make($request->new_password),
+                'auth_type' => $auth_type
+        ]);
+        return response()->json(['result' => "updated"] , 201);
     }
 
     public function destroy(Request $request){
@@ -54,9 +56,29 @@ class UserController extends Controller
         $user->token()->revoke();
         $profiles = $user->profiles()->get();
         $providers = $user->providers()->get();
+        $main_profile = $user->profiles()->whereIsMain(True)->first();
 
         //プロファイル
         forEach($profiles as $profile){
+            //グループ情報
+            $profile_groups = $profile->profileGroups();
+            foreach($profile_groups as $profile_group){
+                $profile_group->update([
+                'profile_id' => $main_profile->id
+                ]);
+            }
+            //パーミッション情報
+            $permittions = $profile->permittion();
+            foreach($permittions as $permittion){
+                $permittion->delete();
+            }
+            //フレンド情報
+            $friendships = $profile->friendships()->get();
+            foreach($friendships as $friendship){
+                $friendship->update([
+                    'profile_id' => $main_profile->id
+                ]);
+            }
             $profile->update([
                 'exist' => null
             ]);

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('friend_user_id');
             $table->unsignedBigInteger('permitting_id');
             $table->unsignedBigInteger('permitted_id');
-            $table->foreignId('profile_id')->constrained()->name('focused_profile_id');
+            $table->foreignId('profile_id')->constrained()->name('main_profile_id');
             $table->foreignId('room_id')->constrained();
             $table->string('state')->default("not_friend");
             $table->timestamps();

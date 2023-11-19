@@ -8,7 +8,7 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\FriendController;
+use App\Http\Controllers\FriendshipController;
 use App\Http\Controllers\GroupController;
 
 
@@ -32,22 +32,27 @@ Route::group(['middleware' => "auth:api" ], function () {
     Route::delete('/user', [UserController::class, 'destroy']);
 
     //プロフィール
-    Route::get('/user/profiles', [ProfileController::class, 'myProfiles']);
     Route::get('/profiles', [ProfileController::class, 'get']);
+    Route::get('/profile/image', [ProfileController::class, 'getImage']);
     Route::get('/profile', [ProfileController::class, 'find']);
     Route::post('/profile', [ProfileController::class, 'create']);
     Route::post('/profile/{id}', [ProfileController::class, 'update']);
+    Route::delete('/profile/{id}', [ProfileController::class, 'destroy']);
 
 
     //フレンド
-    Route::get('/friendship', [FriendController::class, 'get']);
-    Route::post('/friendship', [FriendController::class, 'create']);
-    Route::patch('/friendship/feature', [FriendController::class, 'updateFeaturedProfile']);
-    Route::post('/friendship/permit', [FriendController::class, 'updatePermition']);
+    Route::get('/friendship', [FriendshipController::class, 'get']);
+    Route::post('/friendship', [FriendshipController::class, 'create']);
+    Route::patch('/friendship/feature', [FriendshipController::class, 'updateFeaturedProfile']);
+    Route::post('/friendship/permit', [FriendshipController::class, 'updatePermition']);
+    Route::patch('/friendship/accept', [FriendshipController::class, 'accept']);
 
     //グループ
     Route::get('/groups', [GroupController::class, 'get']);
     Route::post('/group', [GroupController::class, 'create']);
+    Route::get('/group/image', [GroupController::class, 'getImage']);
+    Route::patch('/group/profile', [GroupController::class, 'switchProfile']);
+    Route::patch('/group/accept', [GroupController::class, 'accept']);
 
     //ルーム
     Route::get('/rooms', [RoomController::class, 'get']);

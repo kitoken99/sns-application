@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Message;
 use App\Models\Room;
-use App\Models\Friend;
+use App\Models\Friendship;
 use Illuminate\Http\Request;
 use App\Events\MessageRecieved;
 use App\Models\MessageUser;
@@ -37,7 +37,7 @@ class MessageController extends Controller
                 'room_id' => $room_id,
                 'body' => request()->body
             ]);
-            $members = Friend::whereRoomId($room_id)->groupBy('user_id')->get(['user_id']);
+            $members = Friendship::whereRoomId($room_id)->groupBy('user_id')->get(['user_id']);
             foreach($members as $member){
                 if($member->user_id != $request->user()->id){
                     MessageUser::create([

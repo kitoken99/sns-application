@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Events\ProfileUpdated;
+use App\Events\ProfileDeleted;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,30 +20,75 @@ class Profile extends Model
     protected $fillable = [
         'user_id', 'account_type', 'name', 'caption', 'image', 'is_main', 'exist', 'show_birthday'
     ];
+    protected $casts = [
+        'is_main' => 'boolean',
+        'show_birthday' => 'boolean',
+    ];
     protected $hidden = [
+        'exist',
         'created_at',
         'updated_at',
         'deleted_at',
     ];
-
+    protected $dispatchesEvents = [
+        'updated' => ProfileUpdated::class,
+        'deleting' => ProfileDeleted::class
+    ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
-    public function friends(): HasMany
+    public function profileGroups(): HasMany
     {
-        return $this->hasMany(Friend::class);
+        return $this->hasMany(ProfileGroup::class);
     }
-    // public function rooms(): BelongsToMany
-    // {
-    //     return $this->belongsToMany(Room::class, 'profile_');
-    // }
+    public function profileRooms(): HasMany
+    {
+        return $this->hasMany(RoomProfile::class);
+    }
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(Group::class, 'profile_group')->withPivot('profile_id', 'state');
+    }
+    public function permittion(): HasMany
+    {
+        return $this->hasMany(PermittedProfile::class);
+    }
+    public function friendships(): HasMany
+    {
+        return $this->hasMany(Friendship::class);
+    }
+
     public function toBase()
     {
         $filePath = "public/profiles/" . $this->image;
         if (Storage::exists($filePath)) {
             $this->image = base64_encode(Storage::get($filePath));
         }
+    }
+    public function getBirthday(){
+        $this->birthday = User::find($this->user_id)->birthday;
+    }
+    public function setProfile(){
+        $this->toBase();
+        $this->getBirthday();
+    }
+    public function saveImage($image){
+        if(!$image){
+            $this->image = "user_default.image.png";
+            return;
+        }
+        $image->store('public/profiles');
+        $file_name = $image->getClientOriginalName();
+        $image->storeAs('public/profiles', $file_name);
+        $this->image = $file_name;
+    }
+    public function getDefaultProfile(){
+        $this->caption= "";
+        $this->image= "user_default.image.png";
+        $this->name= "unknown";
+        $this->caption= "";
+        $this->show_barthday= false;
     }
 }

@@ -24,6 +24,13 @@ class Room extends Model
     {
         return $this->hasMany(Message::class);
     }
+
+
+
+
+
+
+
     public function profiles()
     {
         $room_profiles =  $this->hasMany(RoomProfile::class)->get();
