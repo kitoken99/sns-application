@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Events;
+namespace App\Events\Profile;
 
 use App\Models\User;
 use App\Models\Profile;
@@ -14,7 +14,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-class ProfileDeleted implements ShouldBroadcast
+class ProfileUpdated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
     /**
@@ -56,7 +56,7 @@ class ProfileDeleted implements ShouldBroadcast
 
         }
         foreach($user_ids as $user_id){
-            array_push($channels, new Channel('user-'.$user_id, $this->profile->getDefaultProfile()));
+            array_push($channels, new Channel('user-'.$user_id, $this->profile));
         }
         return $channels;
     }

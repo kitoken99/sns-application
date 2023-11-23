@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Events\FriendshipCreated;
+use App\Events\Friendship\FriendshipCreated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -50,6 +50,30 @@ class Friendship extends Model
         }
         return $profiles;
     }
+    public function getFriendship(){
+        $friendship["user_id"] = $this->friend_user_id;
+        $friendship["profile_id"] = $this->profile_id;
+        $friendship["room_id"] = $this->room_id;
+        $friendship["state"] = $this->state;
+        if(!User::find($this->friend_user_id)){
+          $friendship["state"] = "deleted";
+        }
+        $friendship['profile_ids'] = [];
+        $permitting_profiles = $this->permittingProfiles();
+        foreach($permitting_profiles as $permitting_profile){
+            array_push($friendship['profile_ids'], $permitting_profile->id);
+        }
+        $friendship['not_read'] = User::find($this->user_id)->messages()->where('is_read', false)->whereRoomId($this->room_id)->count();
+        $last_message = Room::find($this->room_id)->messages()->latest('created_at')->first();
+        if($last_message){
+            $friendship['last_updated_at'] = $last_message->created_at;
+        }else{
+            $friendship['last_updated_at'] = Room::find($this->room_id)->created_at;
+        }
+        $friendship['last_message'] = $last_message;
+        return $friendship;
+    }
+
     public function getRoom($state = true){
         $profile = Profile::find($this->profile_id);
         if($state){

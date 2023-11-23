@@ -6,14 +6,13 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Profile;
 use App\Models\ProfileGroup;
+use App\Events\Profile\ProfileDeleted;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 
 class ProfileController extends Controller
 {
-
-
     public function get(Request $request){
         $response = [];
         $default_profile = new Profile;
@@ -94,8 +93,8 @@ class ProfileController extends Controller
         return $profile;
     }
 
-    public function update(Request $request){
-        $profile = Profile::find($request->input('id'));
+    public function update(Request $request, $id){
+        $profile = Profile::find($id);
         $profile->name = $request->name;
         $profile->account_type = $request->account_type;
         $profile->caption = $request->caption;
@@ -108,32 +107,35 @@ class ProfileController extends Controller
         return $profile;
     }
 
-    public function destroy(Request $request){
-        $main_profile = $request->user()->profiles()->whereIsTop(true)->first();
-        $profile = Profile::find($request->input('id'));
+    public function destroy(Request $request,$id){
+        $main_profile = $request->user()->profiles()->whereIsMain(true)->first();
+        $profile = Profile::find($id);
         if($profile->is_main) return response()->json(['result' => "failed"], 400);
+        event(new ProfileDeleted($profile));
         //グループ情報
-        $profile_groups = $profile->profileGroups();
+        $profile_groups = $profile->profileGroups()->get();
         foreach($profile_groups as $profile_group){
             $profile_group->update([
                 'profile_id' => $main_profile->id
             ]);
         }
         //パーミッション情報
-        $permittions = $profile->permittion();
+        $permittions = $profile->permittion()->get();
+        Log::debug($permittions);
         foreach($permittions as $permittion){
             $permittion->delete();
         }
         //フレンド情報
-        $friendships = $profile->friendships();
+        $friendships = $profile->friendships()->get();
+        Log::debug($friendships);
         foreach($friendships as $friendship){
             $friendship->update([
                 'profile_id' => $main_profile->id
             ]);
         }
-        $profile->update([
-            'exist' => null
-        ]);
+        $profile->exist = null;
+        $profile->save();
+
         $profile->delete();
         return response()->json(['result' => "deleted"], 201);
     }

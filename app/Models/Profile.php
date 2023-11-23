@@ -2,8 +2,7 @@
 
 namespace App\Models;
 
-use App\Events\ProfileUpdated;
-use App\Events\ProfileDeleted;
+use App\Events\Profile\ProfileUpdated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,7 +31,6 @@ class Profile extends Model
     ];
     protected $dispatchesEvents = [
         'updated' => ProfileUpdated::class,
-        'deleting' => ProfileDeleted::class
     ];
 
     public function user(): BelongsTo
@@ -85,10 +83,10 @@ class Profile extends Model
         $this->image = $file_name;
     }
     public function getDefaultProfile(){
-        $this->caption= "";
-        $this->image= "user_default.image.png";
-        $this->name= "unknown";
-        $this->caption= "";
-        $this->show_barthday= false;
+            $this->caption= "";
+            $this->image= "user_default.image.png";
+            $this->name= "unknown";
+            $this->caption= "";
+            $this->show_birthday= false;
     }
 }

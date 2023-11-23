@@ -20,21 +20,11 @@ class GroupController extends Controller
 
     public function get(Request $request){
         $response = [];
-        $profiles = $request->user()->profiles()->get();
         $groups = $request->user()->groups()->get();
-        foreach ($profiles as $profile){
-            $response[$profile->id] = [];
-            if($profile->is_main){
-                $main_profile_id = $profile->id;
-            }
-        }
         foreach($groups as $group){
-            $group->setGroup($request->user()->id);
-            $response[$group->pivot->profile_id][$group->id] = $group;
-            if($main_profile_id!=$group->pivot->profile_id){
-                $response[$main_profile_id][$group->id] = $group;
-            }
+            $response[$group->id] = $group->getGroup($request->user()->id);
         }
+        if(empty($response))$response = new \stdClass();
         return $response;
     }
 
@@ -54,7 +44,7 @@ class GroupController extends Controller
             "user_id" => $request->user()->id,
             "profile_id" => $request->profile_id,
             "group_id" => $group->id,
-            "state" => "accepted"
+            "state" => "joined"
         ]);
         foreach ($request->ids as $user_id){
             $profile = Profile::whereUserId($user_id)->whereIsMain(true)->first();
@@ -68,20 +58,7 @@ class GroupController extends Controller
         $group = Group::find($group->id);
         event(new GroupEvent("GroupCreated", $group->id, $request->user()->id));
 
-
-        //レスポンスデータ
-        //プロファイルID
-
-        $profile_id = [];
-        array_push($profile_id, Profile::find($request->profile_id)->id);
-        array_push($profile_id, $request->user()->profiles()->whereIsMain(true)->first()->id);
-        $response["profile_id"] = $profile_id;
-        //グループデータ
-        $group->setGroup($request->user()->id);
-        $response["group"] = $group;
-        //ルームデータ
-        $response['room'] = $group->getRoom($request->user()->id);
-        return $response;
+        return $group->getGroup($request->user()->id);
 
 
     }
@@ -104,13 +81,14 @@ class GroupController extends Controller
         $group = Group::find($request->group_id);
 
         event(new GroupEvent("MemberUpdated", $group->id, $request->user()->id));
-        $group->setGroup($request->user()->id);
-        return $group;
+        return $group->getGroup($request->user()->id);
     }
-    public function accept(Request $request){
+
+
+    public function state(Request $request){
       $profile_group = ProfileGroup::whereUserId($request->user()->id)->whereGroupId($request->group_id)->first();
       $profile_group->update([
-        "state" => "accepted"
+        "state" => $request->state
       ]);
     }
 }

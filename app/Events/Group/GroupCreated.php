@@ -23,7 +23,6 @@ class GroupCreated implements ShouldBroadcast
 
     public $profiles;
     public $group;
-    public $room;
     public $user_id;
     public function __construct($group, $user_id)
     {
@@ -34,9 +33,8 @@ class GroupCreated implements ShouldBroadcast
             $profile->getBirthday();
             array_push($this->profiles, $profile);
         }
-        $this->room = $group->getRoom($user_id, false);
         $this->user_id = $user_id;
-        $this->group = $group;
+        $this->group = $group->getGroup($this->user_id, false);
     }
 
     /**
@@ -49,12 +47,10 @@ class GroupCreated implements ShouldBroadcast
     return [
         'profiles' => $this->profiles,
         'group' => $this->group,
-        'room' => $this->room,
     ];
 }
     public function broadcastOn(): array
     {
-        $this->group->setGroup($this->user_id, false);
         return [
             new Channel('user-'.$this->user_id),
         ];

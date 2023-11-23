@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Events;
+namespace App\Events\Friendship;
 
 use App\Models\User;
 use App\Models\Profile;
@@ -21,30 +21,32 @@ class FriendshipCreated implements ShouldBroadcast
      * Create a new event instance.
      */
 
+    public $user_id;
     public $profiles;
     public $friendship;
-    public $room;
     public function __construct($friendship)
     {
+        $this->user_id = $friendship->user_id;
         $profiles = [];
         foreach($friendship->permittedProfiles() as $profile){
             $profile->getBirthday();
             array_push($profiles, $profile);
         }
         $this->profiles = $profiles;
-        $this->friendship = $friendship;
-        $this->room = $friendship->getRoom(False);
+        $this->friendship = $friendship->getFriendship();
     }
-
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
-    public function broadcastOn(): array
+    public function broadcastWith(): array
     {
         return [
-            new Channel('user-'.$this->friendship->user_id),
+            'profiles' => $this->profiles,
+            'friendship' => $this->friendship,
+        ];
+    }
+    public function broadcastOn(): array
+    {
+        Log::debug(new Channel('user-'.$this->friendship["user_id"]));
+        return [
+            new Channel('user-'.$this->user_id),
         ];
     }
 }

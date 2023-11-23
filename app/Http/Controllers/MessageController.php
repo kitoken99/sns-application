@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Message;
 use App\Models\Room;
+use App\Models\Group;
 use App\Models\Friendship;
 use Illuminate\Http\Request;
 use App\Events\MessageRecieved;
@@ -37,7 +38,13 @@ class MessageController extends Controller
                 'room_id' => $room_id,
                 'body' => request()->body
             ]);
-            $members = Friendship::whereRoomId($room_id)->groupBy('user_id')->get(['user_id']);
+            Log::debug("kokodesu");
+            if(Friendship::whereRoomId($room_id)->exists())
+                $members = Friendship::whereRoomId($room_id)->groupBy('user_id')->get(['user_id']);
+            if(Group::whereRoomId($room_id)->exists())
+                $members = Group::whereRoomId($room_id)->first()->profiles()->get();
+
+            Log::debug($members);
             foreach($members as $member){
                 if($member->user_id != $request->user()->id){
                     MessageUser::create([
@@ -51,9 +58,8 @@ class MessageController extends Controller
     }
 
     public function read(Request $request){
+        Log::debug($request->id);
         $message = MessageUser::whereMessageId($request->id)->whereUserId($request->user()->id)->first();
-        Log::debug($message);
-        Log::debug(MessageUser::whereMessageId($request->id)->get());
         $message->is_read = true;
         return $message->save();
 

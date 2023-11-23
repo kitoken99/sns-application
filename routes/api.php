@@ -1,10 +1,9 @@
 <?php
 
-use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SocialLoginController;
-use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
@@ -45,17 +44,16 @@ Route::group(['middleware' => "auth:api" ], function () {
     Route::post('/friendship', [FriendshipController::class, 'create']);
     Route::patch('/friendship/feature', [FriendshipController::class, 'updateFeaturedProfile']);
     Route::post('/friendship/permit', [FriendshipController::class, 'updatePermition']);
-    Route::patch('/friendship/accept', [FriendshipController::class, 'accept']);
+    Route::patch('/friendship/state', [FriendshipController::class, 'state']);
 
     //グループ
     Route::get('/groups', [GroupController::class, 'get']);
     Route::post('/group', [GroupController::class, 'create']);
     Route::get('/group/image', [GroupController::class, 'getImage']);
     Route::patch('/group/profile', [GroupController::class, 'switchProfile']);
-    Route::patch('/group/accept', [GroupController::class, 'accept']);
+    Route::patch('/group/state', [GroupController::class, 'state']);
 
-    //ルーム
-    Route::get('/rooms', [RoomController::class, 'get']);
+
 
     //メッセージ
     Route::get('/room/{room_id}/messages', [MessageController::class, 'get']);

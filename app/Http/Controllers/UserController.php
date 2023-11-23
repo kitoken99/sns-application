@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\Profile\ProfileDeleted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 
 class UserController extends Controller
@@ -53,18 +55,18 @@ class UserController extends Controller
 
     public function destroy(Request $request){
         $user = $request->user();
-        $user->token()->revoke();
         $profiles = $user->profiles()->get();
         $providers = $user->providers()->get();
-        $main_profile = $user->profiles()->whereIsMain(True)->first();
-
+        $main_profile = $user->profiles()->whereIsMain(true)->first();
+        Log::debug($main_profile);
         //プロファイル
         forEach($profiles as $profile){
+            event(new ProfileDeleted($profile));
             //グループ情報
             $profile_groups = $profile->profileGroups();
             foreach($profile_groups as $profile_group){
                 $profile_group->update([
-                'profile_id' => $main_profile->id
+                  'profile_id' => $main_profile->id
                 ]);
             }
             //パーミッション情報
@@ -95,6 +97,7 @@ class UserController extends Controller
         User::find($user->id)->update([
             'exist' => null
         ]);
+        $user->token()->revoke();
         $user->delete();
         return response()->json(['result' => "deleted"], 201);
     }

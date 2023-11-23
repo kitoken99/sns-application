@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Events;
+namespace App\Events\Profile;
 
 use App\Models\User;
 use App\Models\Profile;
@@ -14,7 +14,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-class ProfileUpdated implements ShouldBroadcast
+class ProfileDeleted implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
     /**
@@ -22,11 +22,27 @@ class ProfileUpdated implements ShouldBroadcast
      */
 
     public $profile;
+    public $user_id;
+    public $profile_id;
+    public $main_profile_id;
     public function __construct( $profile)
     {
+        $profile->getDefaultProfile();
         $this->profile = $profile;
+        $this->user_id = $profile->user_id;
+        $this->profile_id = $profile->id;
+        $this->main_profile_id = User::find($this->user_id)->profiles()->whereIsMain(true)->first()->id;
     }
 
+    public function broadcastWith(): array
+    {
+    return [
+        'profile' => $this->profile,
+        'user_id' => $this->user_id,
+        'profile_id' => $this->profile_id,
+        'main_profile_id' => $this->main_profile_id,
+    ];
+    }
     /**
      * Get the channels the event should broadcast on.
      *
@@ -34,10 +50,10 @@ class ProfileUpdated implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
-        $this->profile->getBirthday();
         $user_ids = [];
         $channels = [];
         $friendships = User::find($this->profile->user_id)->friendships()->get();
+        array_push($user_ids, $this->user_id);
         foreach ($friendships as $friendship){
             foreach($friendship->permittingProfiles() as $profile){
                 if($profile->id == $this->profile->id){
@@ -56,7 +72,7 @@ class ProfileUpdated implements ShouldBroadcast
 
         }
         foreach($user_ids as $user_id){
-            array_push($channels, new Channel('user-'.$user_id, $this->profile));
+            array_push($channels, new Channel('user-'.$user_id, $this->profile->getDefaultProfile()));
         }
         return $channels;
     }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\PermitionUpdated;
+use App\Events\Permission\PermissionUpdated;
 use Illuminate\Http\Request;
 use App\Models\RoomProfile;
 use App\Models\User;
@@ -16,27 +16,12 @@ use Illuminate\Support\Facades\Log;
 class FriendshipController extends Controller
 {
     public function get(Request $request){
-        $response = [];
-        $profiles = $request->user()->profiles()->get();
-        foreach ($profiles as $profile){
-            $response[$profile->id] =  [];
+        $response =[];
+        $friendships = $request->user()->friendships()->get();
+        foreach($friendships as $friendship){
+            $response[$friendship->friend_user_id] = $friendship->getFriendship();
         }
-        $friends = $request->user()->friendships()->get();
-        foreach($friends as $friend){
-            $permitting_profiles = $friend->permittingProfiles();
-            foreach($permitting_profiles as $profile){
-                    $response[$profile->id][$friend->friend_user_id]["profile_id"] = $friend->profile_id;
-                    $response[$profile->id][$friend->friend_user_id]["room_id"] = $friend->room_id;
-                    $response[$profile->id][$friend->friend_user_id]["state"] = $friend->state;
-                    if(!User::find($friend->friend_user_id)){
-                            $response[$profile->id][$friend->friend_user_id]["state"] = "deleted";
-                    }
-            }
-        }
-        foreach ($profiles as $profile){
-            if(empty($response[$profile->id]))
-            $response[$profile->id] = new \stdClass();
-        }
+        if(empty($response))$response = new \stdClass();
         return $response;
     }
 
@@ -77,9 +62,8 @@ class FriendshipController extends Controller
 
         $profile = Profile::find($friend_profile_id);
         $profile->setProfile();
-        $response['profiles'] = [$profile];
-        $response['friendship'] = $friendship;
-        $response['room'] = $friendship->getRoom(true);
+        $response['profile'] = $profile;
+        $response['friendship'] = $friendship->getFriendship();
         return $response;
     }
 
@@ -108,14 +92,13 @@ class FriendshipController extends Controller
                 $tempProfiles->whereProfileId($key)->first()->delete();
             }
         }
-        broadcast(new PermitionUpdated($friendship));
+        broadcast(new PermissionUpdated($friendship));
         return Permition::find($friendship->permitting_id)->permittedProfiles()->get();
     }
 
-    public function accept(Request $request){
+    public function state(Request $request){
         $friendship = Friendship::whereUserId($request->user()->id)->whereFriendUserId($request->friend_id)->first();
-        Log::debug($request->friend_id);
-        $friendship->state = "accepted";
+        $friendship->state = $request->state;
         $friendship->update();
     }
 }

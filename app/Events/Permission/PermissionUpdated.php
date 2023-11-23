@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Events;
+namespace App\Events\Permission;
 
 use App\Models\User;
 use App\Models\Profile;
@@ -15,7 +15,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-class PermitionUpdated implements ShouldBroadcast
+class PermissionUpdated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
     /**

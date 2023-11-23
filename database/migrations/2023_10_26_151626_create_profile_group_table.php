@@ -15,7 +15,7 @@ return new class extends Migration
             $table->foreignId('group_id')->constrained();
             $table->foreignId('user_id')->constrained();
             $table->foreignId('profile_id')->constrained();
-            $table->string('state')->default("unaccepted");
+            $table->string('state')->default("invited");
             $table->primary(['user_id', 'group_id']);
             $table->timestamps();
         });
