@@ -63,6 +63,16 @@ class GroupController extends Controller
 
     }
 
+    public function update(Request $request, $id){
+        $group = Group::find($id);
+        $group->name = $request->name;
+        $group->caption = $request->caption;
+        $group->saveImage($request->file('image'));
+        $group->save();
+        event(new GroupEvent("GroupUpdated", $group->id, $request->user()->id));
+        return $group->getGroup($request->user()->id);
+    }
+
     public function getImage(Request $request){
         $filePath = "public/group-images/" . $request->image;
         if (Storage::exists($filePath)) {

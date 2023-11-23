@@ -17,6 +17,7 @@ class ProfileController extends Controller
         $response = [];
         $default_profile = new Profile;
         $default_profile->getDefaultProfile();
+        $default_profile->toBase();
         //my profiles
         $profiles = $request->user()->profiles()->get();
         foreach($profiles as $profile){

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Group extends Model
 {
@@ -18,7 +18,6 @@ class Group extends Model
     protected $fillable = [
         'name', 'caption', 'image', 'room_id', 'profile_id'
     ];
-
 
     public function room(): BelongsTo
     {
@@ -32,7 +31,9 @@ class Group extends Model
     {
         return $this->belongsToMany(Profile::class, 'profile_group')->withPivot('profile_id', 'state');
     }
-
+    public function group_profiles(): HasMany{
+        return $this->hasMany(ProfileGroup::class);
+    }
     public function toBase(){
         $filePath = "public/group-images/" . $this->image;
         if (Storage::exists($filePath)) {
@@ -40,6 +41,7 @@ class Group extends Model
         }
     }
     public function saveImage($image){
+        if(!$image)return;
         $image->store('public/group-images');
         $file_name = $image->getClientOriginalName();
         $image->storeAs('public/group-images', $file_name);
@@ -65,9 +67,9 @@ class Group extends Model
             'last_updated_at' => $last_message ? $last_message->created_at : Room::find($this->room_id)->created_at,
             'last_message' => $last_message,
         ];
-        $profiles = $this->profiles()->get();
+        $profiles = $this->group_profiles()->get();
         foreach ($profiles as $profile){
-            $room["members"][$profile->user_id] = $profile->id;
+            $room["members"][$profile->user_id] = $profile->profile_id;
         }
 
         return $room;

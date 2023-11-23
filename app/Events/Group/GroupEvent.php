@@ -3,8 +3,7 @@
 namespace App\Events\Group;
 
 use App\Models\Group;
-use App\Events\Group\MemberUpdated;
-use App\Events\Group\GroupCreated;
+
 
 class GroupEvent
 {
@@ -16,6 +15,7 @@ class GroupEvent
             if($user->id == $pusher_id) continue;
             if($event == "MemberUpdated") broadcast(new MemberUpdated($group, $pusher_id, $user->id));
             if($event == "GroupCreated") broadcast(new GroupCreated($group, $user->id));
+            if($event == "GroupUpdated") broadcast(new GroupUpdated($group, $user->id));
         }
     }
 }
