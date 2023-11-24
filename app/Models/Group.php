@@ -38,12 +38,10 @@ class Group extends Model
                 if($profile){
                     array_push($profiles, $profile);
                 }else{
-                    if(!User::find($group_profile->user_id)){
                         $profile = $default_profile;
                         $profile["user_id"] = $group_profile->user_id;
                         $profile["id"] = $group_profile->profile_id;
                         array_push($profiles, $profile);
-                    }
                 }
             }
             return $profiles;
