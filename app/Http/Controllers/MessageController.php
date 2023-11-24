@@ -38,13 +38,11 @@ class MessageController extends Controller
                 'room_id' => $room_id,
                 'body' => request()->body
             ]);
-            Log::debug("kokodesu");
             if(Friendship::whereRoomId($room_id)->exists())
                 $members = Friendship::whereRoomId($room_id)->groupBy('user_id')->get(['user_id']);
             if(Group::whereRoomId($room_id)->exists())
-                $members = Group::whereRoomId($room_id)->first()->profiles()->get();
+                $members = Group::whereRoomId($room_id)->first()->profiles();
 
-            Log::debug($members);
             foreach($members as $member){
                 if($member->user_id != $request->user()->id){
                     MessageUser::create([

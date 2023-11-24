@@ -13,9 +13,6 @@ class Message extends Model
         'body', 'room_id', 'user_id'
     ];
 
-    protected $guarded = [
-
-    ];
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
