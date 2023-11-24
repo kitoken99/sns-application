@@ -55,23 +55,23 @@ class UserController extends Controller
 
     public function destroy(Request $request){
         $user = $request->user();
-        $profiles = $user->profiles()->get();
+        $profiles = $user->profiles()->get()->reverse();
         $providers = $user->providers()->get();
         $main_profile = $user->profiles()->whereIsMain(true)->first();
-        Log::debug($main_profile);
         //プロファイル
         forEach($profiles as $profile){
             event(new ProfileDeleted($profile));
             //グループ情報
-            $profile_groups = $profile->profileGroups();
+            $profile_groups = $profile->profileGroups()->get();
             foreach($profile_groups as $profile_group){
                 $profile_group->update([
                   'profile_id' => $main_profile->id
                 ]);
             }
             //パーミッション情報
-            $permittions = $profile->permittion();
+            $permittions = $profile->permittion()->get();
             foreach($permittions as $permittion){
+                Log::debug($permittion);
                 $permittion->delete();
             }
             //フレンド情報

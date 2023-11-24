@@ -56,7 +56,7 @@ class ProfileDeleted implements ShouldBroadcast
         array_push($user_ids, $this->user_id);
         foreach ($friendships as $friendship){
             foreach($friendship->permittingProfiles() as $profile){
-                if($profile->id == $this->profile->id){
+                if($profile->id == $this->profile_id){
                     array_push($user_ids, $friendship->friend_user_id);
                 }
             }
@@ -65,7 +65,7 @@ class ProfileDeleted implements ShouldBroadcast
         foreach ($groups as $group){
             $profiles= $group->profiles();
             foreach ($profiles as $profile){
-                if($profile->id != $this->profile->id && !in_array($user_ids, [$profile->user_id])){
+                if($profile->id != $this->profile_id && !in_array($user_ids, [$profile->user_id])){
                     array_push($user_ids, $profile->user_id);
                 }
             }
