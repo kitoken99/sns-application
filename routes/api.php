@@ -51,6 +51,7 @@ Route::group(['middleware' => "auth:api" ], function () {
     Route::post('/group', [GroupController::class, 'create']);
     Route::post('/group/{id}', [GroupController::class, 'update']);
     Route::get('/group/image', [GroupController::class, 'getImage']);
+    Route::patch('/group/{id}/invite', [GroupController::class, 'invite']);
     Route::patch('/group/profile', [GroupController::class, 'switchProfile']);
     Route::patch('/group/state', [GroupController::class, 'state']);
 

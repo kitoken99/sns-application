@@ -37,7 +37,7 @@ class MemberUpdated implements ShouldBroadcast
         $this->room_id = $group->room_id;
 
         $this->members = [];
-        $profiles = $group->profiles()->get();
+        $profiles = $group->profiles();
         foreach ($profiles as $profile){
             $this->members[$profile->user_id] = $profile->id;
         }

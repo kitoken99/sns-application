@@ -66,6 +66,7 @@ class Profile extends Model
         }
     }
     public function getBirthday(){
+        if(User::find($this->user_id))
         $this->birthday = User::find($this->user_id)->birthday;
     }
     public function setProfile(){

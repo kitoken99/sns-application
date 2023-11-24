@@ -27,10 +27,28 @@ class Group extends Model
     {
         return $this->belongsToMany(User::class, 'profile_group');
     }
-    public function profiles(): BelongsToMany
+    public function profiles()
     {
-        return $this->belongsToMany(Profile::class, 'profile_group')->withPivot('profile_id', 'state');
-    }
+        $default_profile = new Profile;
+        $default_profile->getDefaultProfile();
+        $profiles = [];
+        $group_profiles= ProfileGroup::whereGroupId($this->id)->get();
+            foreach ($group_profiles as $group_profile){
+                $profile = Profile::find($group_profile->profile_id);
+                if($profile){
+                    array_push($profiles, $profile);
+                }else{
+                    if(!User::find($group_profile->user_id)){
+                        $profile = $default_profile;
+                        $profile["user_id"] = $group_profile->user_id;
+                        $profile["id"] = $group_profile->profile_id;
+                        array_push($profiles, $profile);
+                    }
+                }
+            }
+            return $profiles;
+        }
+
     public function group_profiles(): HasMany{
         return $this->hasMany(ProfileGroup::class);
     }
@@ -56,11 +74,11 @@ class Group extends Model
             'name' => $this->name,
             'caption' => $this->caption,
             'image' => $this->image,
-            'state' => $this->profiles()->where('profiles.user_id', $user_id)->first()->pivot->state,
+            'state' =>  ProfileGroup::whereGroupId($this->id)->whereUserId($user_id)->first()->state,
             'room_id' =>  $this->room_id,
             'profile_ids' => [
                 $main_profile_id,
-                $this->profiles()->where('profiles.user_id', $user_id)->first()->id
+                ProfileGroup::whereGroupId($this->id)->whereUserId($user_id)->first()->id
             ],
             'members' => [],
             'not_read' => User::find($user_id)->messages()->where('is_read', false)->whereRoomId($this->room_id)->count(),

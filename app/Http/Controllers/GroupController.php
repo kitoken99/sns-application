@@ -73,6 +73,30 @@ class GroupController extends Controller
         return $group->getGroup($request->user()->id);
     }
 
+    public function invite(Request $request, $id){
+        $profiles = [];
+        foreach ($request->ids as $user_id){
+            $profile = Profile::whereUserId($user_id)->whereIsMain(true)->first();
+            $profile->setProfile();
+            array_push($profiles, $profile);
+            ProfileGroup::create([
+                "user_id" => $user_id,
+                "profile_id" => $profile->id,
+                "group_id" => $id
+            ]);
+        };
+        $group = Group::find($id);
+        event(new GroupEvent("MemberInvited", $group->id, $request->user()->id, ['ids' => $request->ids]));
+        $members = [];
+        $group_profiles = $group->profiles();
+        foreach ($group_profiles as $profile){
+            $members[$profile->user_id] = $profile->id;
+        }
+        return [
+            "profiles" => $profiles,
+            "members" => $members
+        ];
+    }
     public function getImage(Request $request){
         $filePath = "public/group-images/" . $request->image;
         if (Storage::exists($filePath)) {

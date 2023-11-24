@@ -43,21 +43,11 @@ class ProfileController extends Controller
         //profiles in group
         $groups = $request->user()->groups()->get();
         foreach ($groups as $group){
-            $group_profiles= ProfileGroup::whereGroupId($group->id)->get();
-            foreach ($group_profiles as $group_profile){
-                $profile = Profile::find($group_profile->profile_id);
-                if($profile){
-                    $profile->toBase();
-                    $response[$profile->user_id][$profile->id] = $profile;
-                }else{
-                    if(!User::find($friendship->friend_user_id)){
-                        $response[$group_profile->user_id][$group_profile->profile_id] = $default_profile;
-                        $response[$group_profile->user_id][$group_profile->profile_id]["user_id"] = $group_profile->user_id;
-                        $response[$group_profile->user_id][$group_profile->profile_id]["id"] = $group_profile->profile_id;
-                    }
-                }
+            $profiles = $group->profiles();
+            foreach ($profiles as $profile){
+                $profile->setProfile();
+                $response[$profile->user_id][$profile->id] = $profile;
             }
-
         }
         return $response;
     }

@@ -63,7 +63,7 @@ class ProfileDeleted implements ShouldBroadcast
         }
         $groups = $this->profile->groups()->get();
         foreach ($groups as $group){
-            $profiles= $group->profiles()->get();
+            $profiles= $group->profiles();
             foreach ($profiles as $profile){
                 if($profile->id != $this->profile->id && !in_array($user_ids, [$profile->user_id])){
                     array_push($user_ids, $profile->user_id);

@@ -2,7 +2,6 @@
 
 namespace App\Events\Group;
 
-use App\Models\ProfileGroup;
 use App\Models\Profile;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -12,28 +11,41 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
-class GroupCreated implements ShouldBroadcast
+class MemberInvited implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-    /**
-     * Create a new event instance.
-     */
 
-    public $profiles;
-    public $group;
     public $user_id;
-    public function __construct($group, $user_id)
+    public $group_id;
+    public $profiles;
+    public $members;
+    public function __construct($group, $user_id, $ids)
     {
-        $this->profiles = [];
-        $profiles= $group->profiles();
+        $this->user_id = $user_id;
+        $this->group_id = $group->id;
+
+        $this->members = [];
+        $profiles = $group->profiles();
         foreach ($profiles as $profile){
+            $this->members[$profile->user_id] = $profile->id;
+        }
+
+        $this->profiles = [];
+        foreach($ids as $user_id){
+            $profile = Profile::whereUserId($user_id)->whereIsMain(true)->first();
             $profile->getBirthday();
             array_push($this->profiles, $profile);
         }
-        $this->user_id = $user_id;
-        $this->group = $group->getGroup($this->user_id, false);
+    }
+
+    public function broadcastWith(): array
+    {
+        return [
+            'group_id' => $this->group_id,
+            'profiles' => $this->profiles,
+            'members' => $this->members,
+        ];
     }
 
     /**
@@ -41,18 +53,11 @@ class GroupCreated implements ShouldBroadcast
      *
      * @return array<int, \Illuminate\Broadcasting\Channel>
      */
-    public function broadcastWith(): array
-{
-    return [
-        'profiles' => $this->profiles,
-        'group' => $this->group,
-    ];
-}
     public function broadcastOn(): array
     {
-
         return [
             new Channel('user-'.$this->user_id),
         ];
     }
 }
+
